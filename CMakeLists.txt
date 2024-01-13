@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   yolov5_pytorch_ros
   std_msgs
   message_generation
+  laser_geometry
 )
 
 
@@ -35,6 +36,7 @@ add_library(LikelihoodFieldMap src/LikelihoodFieldMap.cpp)
 add_executable(mcl_node src/mcl_node.cpp)
 add_executable(emcl_node src/emcl_node.cpp)
 add_executable(emcl2_node src/emcl2_node.cpp)
+add_executable(register_landmark src/register_landmark.cpp)
 
 add_dependencies(mcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(emcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -46,3 +48,4 @@ target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel L
 target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
+target_link_libraries(register_landmark ${catkin_LIBRARIES})
