@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "-std=c++17 -O3 ${CMAKE_CXX_FLAGS}")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   geometry_msgs
   tf2
   tf2_ros
@@ -14,11 +15,10 @@ find_package(catkin REQUIRED COMPONENTS
   laser_geometry
 )
 
-
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mcl
-#  CATKIN_DEPENDS roscpp
+# CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -48,4 +48,4 @@ target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel L
 target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
-target_link_libraries(register_landmark ${catkin_LIBRARIES})
+target_link_libraries(register_landmark yaml-cpp ${catkin_LIBRARIES})

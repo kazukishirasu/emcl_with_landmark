@@ -1,4 +1,7 @@
 #include <ros/ros.h>
+#include <ros/package.h>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <sensor_msgs/LaserScan.h>
@@ -10,25 +13,39 @@
 
 class register_landmark{
     private:
+        struct Pose{
+            double pose[3];
+        };
+        struct Id{
+            Pose pose;
+            bool enable;
+            std::string option;
+        };
+
         ros::NodeHandle nh;
-        ros::Subscriber scan_sub,
-                        yolo_sub;
+        ros::Subscriber scan_sub;
+        ros::Subscriber yolo_sub;
         ros::Publisher marker_pub;
-        int w_img = 1280;
-        int scan_angle = 6.28;
-        bool success_transform;
-        std::vector<std::pair<std::string, float>> object_yaw;
-        sensor_msgs::PointCloud cloud;
         laser_geometry::LaserProjection projector;
+        sensor_msgs::PointCloud cloud;
         tf::TransformListener listener;
+        std::vector<std::pair<std::string, float>> object_yaw;
+        int w_img = 1280;
+        float scan_angle = 6.28;
+        bool success_transform;
+        std::string yaml_path = ros::package::getPath("emcl") += "/landmark/landmark.yaml";
+        std::vector<std::string> landmark_list{"door", "Elevator", "Vending machine"};
+        std::vector<std::vector<Id>> landmark_yaml;
+
     public:
         register_landmark();
         void scan_callback(const sensor_msgs::LaserScan::ConstPtr& msg);
         void yolo_callback(const yolov5_pytorch_ros::BoundingBoxes& msg);
         void loop();
-        void extraction_scan();
-        void read_yaml();
-        void write_yaml();
+        void get_coordinate();
+        void visualize_spot();
+        bool read_yaml();
+        void write_yaml(bool);
 };
 
 register_landmark::register_landmark(){
@@ -41,11 +58,10 @@ register_landmark::register_landmark(){
 void register_landmark::scan_callback(const sensor_msgs::LaserScan::ConstPtr& msg){
     try{
         projector.transformLaserScanToPointCloud("map", *msg, cloud, listener);
-        // ROS_INFO("Transform LaserScan to PointCloud");
         success_transform = true;
     }
     catch (tf::TransformException& e){
-        // ROS_WARN("%s", e.what());
+        ROS_WARN("%s", e.what());
         success_transform = false;
         return;
     }
@@ -55,19 +71,18 @@ void register_landmark::yolo_callback(const yolov5_pytorch_ros::BoundingBoxes& m
     object_yaw.clear();
     for (size_t i = 0; i < msg.bounding_boxes.size(); i++){
         float yaw = -((((msg.bounding_boxes[i].xmin + msg.bounding_boxes[i].xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
-        // ROS_INFO("Class: %s, yaw: %f", msg.bounding_boxes[i].Class.c_str(), yaw);
         object_yaw.push_back(std::make_pair(msg.bounding_boxes[i].Class.c_str(), yaw));
     }
 }
 
 void register_landmark::loop(){
     if (success_transform){
-        extraction_scan();
+        get_coordinate();
     }
+    write_yaml(read_yaml());
 }
 
-void register_landmark::extraction_scan(){
-    ROS_INFO("------------------------------");
+void register_landmark::get_coordinate(){
     geometry_msgs::Point point;
     std_msgs::ColorRGBA color;
     visualization_msgs::Marker marker;
@@ -76,9 +91,6 @@ void register_landmark::extraction_scan(){
             object_yaw[i].second = object_yaw[i].second + 6.28;
         }
         int index = (object_yaw[i].second * cloud.points.size()) / scan_angle;
-        if (object_yaw[i].first == "Vending machine"){
-            ROS_INFO("class: %s, x: %f, y: %f", object_yaw[i].first.c_str(), cloud.points[index].x, cloud.points[index].y);
-        }
         point.x = cloud.points[index].x;
         point.y = cloud.points[index].y;
         point.z = 0.0;
@@ -117,16 +129,73 @@ void register_landmark::extraction_scan(){
     marker_pub.publish(marker);
 }
 
-void register_landmark::read_yaml(){
+void register_landmark::visualize_spot(){
 }
 
-void register_landmark::write_yaml(){
+bool register_landmark::read_yaml(){
+    try{
+        YAML::Node config = YAML::LoadFile(yaml_path);
+        for (YAML::const_iterator it = config["landmark"].begin(); it != config["landmark"].end(); ++it){
+            std::vector<Id> ids;
+            for (YAML::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2){
+                Id id;
+                id.pose.pose[0] = it2->second["pose"][0].as<double>();
+                id.pose.pose[1] = it2->second["pose"][1].as<double>();
+                id.pose.pose[2] = it2->second["pose"][2].as<double>();
+                id.enable = it2->second["enable"].as<bool>();
+                if (it2->second["option"]){
+                    id.option = it2->second["option"].IsNull() ? "null" : it2->second["option"].as<std::string>();
+                }else{
+                    id.option = "null";
+                }
+                ids.push_back(id);
+            }
+            landmark_yaml.push_back(ids);
+        }
+        for (size_t i = 0; i < landmark_yaml.size(); ++i) {
+            for (size_t j = 0; j < landmark_yaml[i].size(); ++j) {
+                std::cout << "Pose: [" << landmark_yaml[i][j].pose.pose[0] << ", "
+                          << landmark_yaml[i][j].pose.pose[1] << ", "
+                          << landmark_yaml[i][j].pose.pose[2] << "], "
+                          << "Enable: " << landmark_yaml[i][j].enable << ", "
+                          << "Option: " << landmark_yaml[i][j].option << std::endl;
+            }
+        }
+        return true;
+    }catch(const std::exception& e){
+        // ROS_ERROR("%s", e.what());
+        return false;
+    }
+}
+
+void register_landmark::write_yaml(bool empty){
+    if (!empty){
+        YAML::Emitter out;
+        out << YAML::BeginMap;
+        out << YAML::Key << "landmark";
+        out << YAML::Value << YAML::BeginMap;
+        for (const auto &ll : landmark_list){
+            out << YAML::Key << ll;
+            out << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "id1";
+            out << YAML::Value << YAML::BeginMap;
+            out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << 0 << 0 << 0 << YAML::EndSeq;
+            out << YAML::Key << "enable" << YAML::Value << false;
+            out << YAML::Key << "option" << YAML::Value << YAML::Null;
+            out << YAML::EndMap;
+            out << YAML::EndMap;
+        }
+        out << YAML::EndMap;
+        out << YAML::EndMap;
+        std::ofstream fout(yaml_path);
+        fout << out.c_str();
+    }
 }
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "Register_landmark");
     register_landmark rl;
-    ros::Rate rate(10);
+    ros::Rate rate(1);
     while (ros::ok()){
         ros::spinOnce();
         rl.loop();
