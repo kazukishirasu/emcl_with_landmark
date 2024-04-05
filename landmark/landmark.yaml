@@ -1,16 +1,16 @@
 landmark:
-  door:
-    id1:
-      pose: [0, 0, 0]
-      enable: false
-      option: ~
-  Elevator:
+  Door:
     id1:
       pose: [1, 0, 0]
       enable: false
       option: ~
-  Vending machine:
+  Elevator:
     id1:
       pose: [2, 0, 0]
+      enable: false
+      option: ~
+  Vending machine:
+    id1:
+      pose: [3, 0, 0]
       enable: false
       option: ~
