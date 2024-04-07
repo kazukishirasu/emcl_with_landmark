@@ -1,0 +1,37 @@
+landmark:
+  Door:
+    id1:
+      pose: [1, 0, 0]
+      enable: false
+      option: ~
+    id1:
+      pose: [2, 0, 0]
+      enable: false
+      option: ~
+  Elevator:
+    id1:
+      pose: [3, 0, 0]
+      enable: false
+      option: ~
+    id1:
+      pose: [4, 0, 0]
+      enable: false
+      option: ~
+  Vending machine:
+    id1:
+      pose: [5, 0, 0]
+      enable: false
+      option: ~
+    id1:
+      pose: [6, 0, 0]
+      enable: false
+      option: ~
+  test:
+    id1:
+      pose: [7, 0, 0]
+      enable: false
+      option: ~
+    id1:
+      pose: [8, 0, 0]
+      enable: false
+      option: ~
