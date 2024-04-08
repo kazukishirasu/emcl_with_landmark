@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
@@ -9,6 +10,7 @@
 #include <laser_geometry/laser_geometry.h>
 #include <tf/transform_listener.h>
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
+#include <std_srvs/Empty.h>
 #include <visualization_msgs/Marker.h>
 
 class register_landmark
@@ -18,6 +20,7 @@ private:
     ros::NodeHandle pnh_;
     ros::Subscriber scan_sub_;
     ros::Subscriber yolo_sub_;
+    ros::ServiceServer save_srv_;
     ros::Publisher marker_pub_;
     laser_geometry::LaserProjection projector_;
     tf::TransformListener listener_;
@@ -38,8 +41,9 @@ private:
 public:
     register_landmark();
     ~register_landmark();
-    void cbscan(const sensor_msgs::LaserScan::ConstPtr& msg);
-    void cbyolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
+    void cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg);
+    void cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
+    bool cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
     void loop();
     void read_yaml();
     void write_yaml();
@@ -50,8 +54,9 @@ register_landmark::register_landmark()
 {
     ROS_INFO("Start register_landmark node");
     read_yaml();
-    scan_sub_ = nh_.subscribe("/scan", 1, &register_landmark::cbscan, this);
-    yolo_sub_ = nh_.subscribe("/detected_objects_in_image", 1, &register_landmark::cbyolo, this);
+    scan_sub_ = nh_.subscribe("/scan", 1, &register_landmark::cb_scan, this);
+    yolo_sub_ = nh_.subscribe("/detected_objects_in_image", 1, &register_landmark::cb_yolo, this);
+    save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
     marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 1);
 }
 
@@ -59,7 +64,7 @@ register_landmark::~register_landmark()
 {
 }
 
-void register_landmark::cbscan(const sensor_msgs::LaserScan::ConstPtr& msg)
+void register_landmark::cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
     if (!listener_.waitForTransform(msg->header.frame_id, "map", msg->header.stamp + ros::Duration().fromNSec(msg->ranges.size()*msg->time_increment), ros::Duration(1.0)))
     {
@@ -68,10 +73,10 @@ void register_landmark::cbscan(const sensor_msgs::LaserScan::ConstPtr& msg)
     projector_.transformLaserScanToPointCloud("map", *msg, cloud_, listener_);
 }
 
-void register_landmark::cbyolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
+void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
 {
     struct landmark lm;
-    for (auto &b:msg.bounding_boxes)
+    for (const auto &b:msg.bounding_boxes)
     {
         auto it = std::find(landmark_list.begin(), landmark_list.end(), b.Class.c_str());
         if (it != landmark_list.end() && b.probability > 0.9)
@@ -93,8 +98,16 @@ void register_landmark::cbyolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
     // lm_list_.clear();
 }
 
+bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+    write_yaml();
+    ROS_INFO("called \"/save_landmark\" service");
+    return true;
+}
+
 void register_landmark::loop()
 {
+    ROS_INFO("size: %ld", lm_list_.size());
 }
 
 void register_landmark::read_yaml()
@@ -136,24 +149,35 @@ void register_landmark::read_yaml()
 void register_landmark::write_yaml()
 {
     YAML::Emitter out;
+    out << YAML::BeginMap;
+    out << YAML::Key << "landmark";
+    out << YAML::BeginMap;
+    for (const auto &name:landmark_list)
+    {
+        out << YAML::Key << name;
         out << YAML::BeginMap;
-        out << YAML::Key << "landmark";
-        out << YAML::Value << YAML::BeginMap;
-        for (const auto &lm : lm_list_){
-            out << YAML::Key << lm.class_;
-            out << YAML::Value << YAML::BeginMap;
-            out << YAML::Key << "id1";
-            out << YAML::Value << YAML::BeginMap;
-            out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << 0 << 0 << 0 << YAML::EndSeq;
-            out << YAML::Key << "enable" << YAML::Value << true;
-            out << YAML::Key << "option" << YAML::Value << YAML::Null;
-            out << YAML::EndMap;
-            out << YAML::EndMap;
+        int count = 1;
+        for (const auto &lm:lm_list_)
+        {
+            if (lm.class_ == name)
+            {
+                std::string id = "id";
+                id += std::to_string(count);
+                out << YAML::Key << id;
+                out << YAML::BeginMap;
+                out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << lm.pos_[0] << lm.pos_[1] << lm.pos_[2] << YAML::EndSeq;
+                out << YAML::Key << "enable" << YAML::Value << true;
+                out << YAML::Key << "option" << YAML::Value << YAML::Null;
+                out << YAML::EndMap;
+                count++;
+            }
         }
         out << YAML::EndMap;
-        out << YAML::EndMap;
-        std::ofstream fout(landmark_file_path);
-        fout << out.c_str();
+    }
+    out << YAML::EndMap;
+    out << YAML::EndMap;
+    std::ofstream fout(landmark_file_path);
+    fout << out.c_str();
 }
 
 void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
@@ -161,7 +185,7 @@ void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
     visualization_msgs::Marker marker_;
     geometry_msgs::Point point_;
     std_msgs::ColorRGBA color_;
-    for (auto &lm:lm_list)
+    for (const auto &lm:lm_list)
     {
         point_.x = lm.pos_[0];
         point_.y = lm.pos_[1];
