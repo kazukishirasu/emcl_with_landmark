@@ -34,10 +34,13 @@ private:
         YAML::Node option_;
     };
     std::vector<landmark> lm_list_;
+    std::vector<std::string> ex_list_{};
 
+    //----------parameters----------
     std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark.yaml";
-    // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_copy.yaml";
+    // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
+    //------------------------------
 public:
     register_landmark();
     ~register_landmark();
@@ -78,10 +81,10 @@ void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
     struct landmark lm;
     for (const auto &b:msg.bounding_boxes)
     {
-        auto it = std::find(landmark_list.begin(), landmark_list.end(), b.Class.c_str());
+        auto it = std::find(landmark_list.begin(), landmark_list.end(), b.Class);
         if (it != landmark_list.end() && b.probability > 0.9)
         {
-            lm.class_ = b.Class.c_str();
+            lm.class_ = b.Class;
             auto yaw_ = -((((b.xmin + b.xmax) / 2) - (w_img_/2)) * M_PI) / (w_img_/2);
             if (yaw_ < 0)
             {
@@ -107,7 +110,6 @@ bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Emp
 
 void register_landmark::loop()
 {
-    ROS_INFO("size: %ld", lm_list_.size());
 }
 
 void register_landmark::read_yaml()
@@ -132,12 +134,11 @@ void register_landmark::read_yaml()
                 lm.option_ = it->second["option"].as<YAML::Node>();
                 lm_list_.push_back(lm);
             }
-            // auto itr = std::find(landmark_list.begin(), landmark_list.end(), lm_name);
-            // if (itr == landmark_list.end())
-            // {
-            //     landmark_list.push_back(it->first.as<std::string>());
-            // }
-            // int lm_index = std::distance(landmark_list.begin(), itr);
+            auto itr = std::find(landmark_list.begin(), landmark_list.end(), lm_name);
+            if (itr == landmark_list.end())
+            {
+                ex_list_.push_back(lm_name);
+            }
         }
     }
     catch(const std::exception& e)
@@ -153,6 +154,28 @@ void register_landmark::write_yaml()
     out << YAML::Key << "landmark";
     out << YAML::BeginMap;
     for (const auto &name:landmark_list)
+    {
+        out << YAML::Key << name;
+        out << YAML::BeginMap;
+        int count = 1;
+        for (const auto &lm:lm_list_)
+        {
+            if (lm.class_ == name)
+            {
+                std::string id = "id";
+                id += std::to_string(count);
+                out << YAML::Key << id;
+                out << YAML::BeginMap;
+                out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << lm.pos_[0] << lm.pos_[1] << lm.pos_[2] << YAML::EndSeq;
+                out << YAML::Key << "enable" << YAML::Value << true;
+                out << YAML::Key << "option" << YAML::Value << YAML::Null;
+                out << YAML::EndMap;
+                count++;
+            }
+        }
+        out << YAML::EndMap;
+    }
+    for (const auto &name:ex_list_)
     {
         out << YAML::Key << name;
         out << YAML::BeginMap;
