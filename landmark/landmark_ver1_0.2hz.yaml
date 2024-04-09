@@ -1,0 +1,96 @@
+landmark:
+  Door:
+    id1:
+      pose: [-12.83936, -5.682217, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-11.98701, -4.990206, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-12.99117, -5.27742, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-13.02673, -5.497223, 0]
+      enable: true
+      option: ~
+  Elevator:
+    id1:
+      pose: [-2.928063, -7.39345, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-8.945574, -0.5726078, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-7.482811, -7.401172, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-5.240449, -7.387548, 0]
+      enable: true
+      option: ~
+    id5:
+      pose: [-4.115887, -1.55501, 0]
+      enable: true
+      option: ~
+    id6:
+      pose: [-5.622567, -7.395354, 0]
+      enable: true
+      option: ~
+    id7:
+      pose: [-3.220923, -7.390654, 0]
+      enable: true
+      option: ~
+    id8:
+      pose: [-4.282944, -1.563418, 0]
+      enable: true
+      option: ~
+    id9:
+      pose: [-8.949884, -0.9222074, 0]
+      enable: true
+      option: ~
+    id10:
+      pose: [-4.677658, -1.66455, 0]
+      enable: true
+      option: ~
+    id11:
+      pose: [-3.544711, -7.388596, 0]
+      enable: true
+      option: ~
+    id12:
+      pose: [-5.515894, -7.348783, 0]
+      enable: true
+      option: ~
+    id13:
+      pose: [-14.93279, -11.39736, 0]
+      enable: true
+      option: ~
+    id14:
+      pose: [-5.639105, -7.373012, 0]
+      enable: true
+      option: ~
+    id15:
+      pose: [-6.083048, -7.273797, 0]
+      enable: true
+      option: ~
+    id16:
+      pose: [-3.92191, -7.10188, 0]
+      enable: true
+      option: ~
+    id17:
+      pose: [-4.328753, -7.133991, 0]
+      enable: true
+      option: ~
+  Vending machine:
+    id1:
+      pose: [1.611476, -5.911864, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [1.267401, -5.720539, 0]
+      enable: true
+      option: ~

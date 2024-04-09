@@ -1,0 +1,100 @@
+landmark:
+  Door:
+    id1:
+      pose: [-12.77189, -5.463838, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-12.76303, -5.462155, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-11.64421, -4.86411, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-4.766237, -2.153859, 0]
+      enable: true
+      option: ~
+  Elevator:
+    id1:
+      pose: [-7.412366, -7.477118, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-3.58022, -1.489402, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-6.747332, -1.599069, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-5.047837, -7.363001, 0]
+      enable: true
+      option: ~
+    id5:
+      pose: [-2.75367, -7.313629, 0]
+      enable: true
+      option: ~
+    id6:
+      pose: [-7.413303, -7.478508, 0]
+      enable: true
+      option: ~
+    id7:
+      pose: [-3.572098, -1.505577, 0]
+      enable: true
+      option: ~
+    id8:
+      pose: [-6.748834, -1.596927, 0]
+      enable: true
+      option: ~
+    id9:
+      pose: [-5.047688, -7.394078, 0]
+      enable: true
+      option: ~
+    id10:
+      pose: [-2.745364, -7.325541, 0]
+      enable: true
+      option: ~
+    id11:
+      pose: [-3.234352, -7.383439, 0]
+      enable: true
+      option: ~
+    id12:
+      pose: [-5.626172, -7.369481, 0]
+      enable: true
+      option: ~
+    id13:
+      pose: [-4.189198, -1.54564, 0]
+      enable: true
+      option: ~
+    id14:
+      pose: [-8.460625, -0.9984784, 0]
+      enable: true
+      option: ~
+    id15:
+      pose: [-13.10283, -10.59151, 0]
+      enable: true
+      option: ~
+    id16:
+      pose: [-3.585215, -1.534261, 0]
+      enable: true
+      option: ~
+    id17:
+      pose: [-11.15213, -3.87774, 0]
+      enable: true
+      option: ~
+    id18:
+      pose: [-8.937316, -1.128239, 0]
+      enable: true
+      option: ~
+    id19:
+      pose: [-1.492543, -2.402961, 0]
+      enable: true
+      option: ~
+  Vending machine:
+    id1:
+      pose: [-3.26347, -7.384473, 0]
+      enable: true
+      option: ~

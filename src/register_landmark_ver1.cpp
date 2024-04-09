@@ -39,7 +39,7 @@ private:
 
     //----------parameters----------
     std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver2.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
 public:
@@ -208,6 +208,7 @@ void register_landmark::write_yaml()
 
 void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
 {
+    //-----new-----
     visualization_msgs::Marker sphere_, text_;
     geometry_msgs::Point point_;
     std_msgs::ColorRGBA color_;
@@ -262,6 +263,7 @@ void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
         i++;
     }
     
+    //-----old-----
     // visualization_msgs::Marker marker_;
     // geometry_msgs::Point point_;
     // std_msgs::ColorRGBA color_;

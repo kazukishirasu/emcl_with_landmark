@@ -2,156 +2,36 @@ landmark:
   Door:
     id1:
       pose: [1, 0, 0]
-      enable: true
+      enable: false
       option: ~
-    id2:
+    id1:
       pose: [2, 0, 0]
-      enable: true
-      option: ~
-    id3:
-      pose: [-12.77849, -5.465094, 0]
-      enable: true
-      option: ~
-    id4:
-      pose: [-12.77206, -5.463873, 0]
-      enable: true
-      option: ~
-    id5:
-      pose: [-12.76722, -5.462954, 0]
-      enable: true
-      option: ~
-    id6:
-      pose: [-12.77297, -5.464045, 0]
-      enable: true
-      option: ~
-    id7:
-      pose: [-12.77297, -5.464045, 0]
-      enable: true
+      enable: false
       option: ~
   Elevator:
     id1:
       pose: [3, 0, 0]
-      enable: true
+      enable: false
       option: ~
-    id2:
+    id1:
       pose: [4, 0, 0]
-      enable: true
-      option: ~
-    id3:
-      pose: [-7.403014, -7.463274, 0]
-      enable: true
-      option: ~
-    id4:
-      pose: [-3.594145, -1.51296, 0]
-      enable: true
-      option: ~
-    id5:
-      pose: [-6.757473, -1.602459, 0]
-      enable: true
-      option: ~
-    id6:
-      pose: [-5.047753, -7.380292, 0]
-      enable: true
-      option: ~
-    id7:
-      pose: [-2.750375, -7.318351, 0]
-      enable: true
-      option: ~
-    id8:
-      pose: [-7.414413, -7.480152, 0]
-      enable: true
-      option: ~
-    id9:
-      pose: [-3.584627, -1.496855, 0]
-      enable: true
-      option: ~
-    id10:
-      pose: [-6.765294, -1.591387, 0]
-      enable: true
-      option: ~
-    id11:
-      pose: [-5.047881, -7.35359, 0]
-      enable: true
-      option: ~
-    id12:
-      pose: [-2.73922, -7.334351, 0]
-      enable: true
-      option: ~
-    id13:
-      pose: [-7.400926, -7.460182, 0]
-      enable: true
-      option: ~
-    id14:
-      pose: [-3.588171, -1.502851, 0]
-      enable: true
-      option: ~
-    id15:
-      pose: [-6.766741, -1.589339, 0]
-      enable: true
-      option: ~
-    id16:
-      pose: [-5.047748, -7.381423, 0]
-      enable: true
-      option: ~
-    id17:
-      pose: [-2.756077, -7.310174, 0]
-      enable: true
-      option: ~
-    id18:
-      pose: [-7.410224, -7.47395, 0]
-      enable: true
-      option: ~
-    id19:
-      pose: [-3.584378, -1.496434, 0]
-      enable: true
-      option: ~
-    id20:
-      pose: [-6.768406, -1.58698, 0]
-      enable: true
-      option: ~
-    id21:
-      pose: [-5.047704, -7.390411, 0]
-      enable: true
-      option: ~
-    id22:
-      pose: [-2.749951, -7.31896, 0]
-      enable: true
-      option: ~
-    id23:
-      pose: [-7.410224, -7.47395, 0]
-      enable: true
-      option: ~
-    id24:
-      pose: [-3.584378, -1.496434, 0]
-      enable: true
-      option: ~
-    id25:
-      pose: [-6.768406, -1.58698, 0]
-      enable: true
-      option: ~
-    id26:
-      pose: [-5.047704, -7.390411, 0]
-      enable: true
-      option: ~
-    id27:
-      pose: [-2.749951, -7.31896, 0]
-      enable: true
+      enable: false
       option: ~
   Vending machine:
     id1:
       pose: [5, 0, 0]
-      enable: true
+      enable: false
       option: ~
-    id2:
+    id1:
       pose: [6, 0, 0]
-      enable: true
+      enable: false
       option: ~
   test:
     id1:
       pose: [7, 0, 0]
-      enable: true
+      enable: false
       option: ~
-    id2:
+    id1:
       pose: [8, 0, 0]
-      enable: true
+      enable: false
       option: ~
