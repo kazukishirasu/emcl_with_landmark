@@ -22,7 +22,8 @@ double Particle::vision_weight(yolov5_pytorch_ros::BoundingBoxes& bbox, YAML::No
     double vision_weight_ = 0;
     for(auto &b:bbox.bounding_boxes){
         double theta_best = M_PI;
-        auto yaw = (-(((b.xmin + b.xmax) / 2) - w_img/2) / w_img/2 * M_PI);
+        // auto yaw = (-(((b.xmin + b.xmax) / 2) - w_img/2) / w_img/2 * M_PI);
+		auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
         for(YAML::const_iterator Observed = landmark_config["landmark"][b.Class].begin(); Observed != landmark_config["landmark"][b.Class].end(); ++Observed){
             auto Ol_x = Observed->second["pose"][0].as<double>();
             auto Ol_y = Observed->second["pose"][1].as<double>();
