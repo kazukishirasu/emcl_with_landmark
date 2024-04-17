@@ -22,6 +22,7 @@ private:
     ros::Subscriber scan_sub_;
     ros::Subscriber yolo_sub_;
     ros::ServiceServer save_srv_;
+    ros::Publisher marker_pub_;
     ros::Publisher sphere_pub_;
     ros::Publisher text_pub_;
     laser_geometry::LaserProjection projector_;

@@ -2,10 +2,12 @@
 #include <ros/package.h>
 #include <iostream>
 #include <string>
+#include <array>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <math.h>
+#include <random>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud.h>
 #include <laser_geometry/laser_geometry.h>
@@ -13,6 +15,9 @@
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
 #include <std_srvs/Empty.h>
 #include <visualization_msgs/Marker.h>
+#include "emcl/x_means.h"
+
+namespace emcl {
 
 class register_landmark
 {
@@ -24,6 +29,7 @@ private:
     ros::ServiceServer save_srv_;
     ros::Publisher sphere_pub_;
     ros::Publisher text_pub_;
+    ros::Timer clustering_timer;
     laser_geometry::LaserProjection projector_;
     tf::TransformListener listener_;
     sensor_msgs::PointCloud cloud_;
@@ -32,17 +38,19 @@ private:
     {
         std::string class_;
         float pos_[3];
+        int clusterID_;
         bool enable_;
         YAML::Node option_;
     };
-    std::vector<landmark> lm_list_;
-    std::vector<std::string> tmp_list_{};
+    std::vector<struct landmark> lm_list_;
+    std::vector<struct landmark> result_list_;
+    std::vector<std::string> landmark_list_{};
 
     //----------parameters----------
     std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver2.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver1_default.yaml";
+    // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
-    float dist_th = 2.0;
     //------------------------------
 public:
     register_landmark();
@@ -50,11 +58,15 @@ public:
     void cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg);
     void cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
     bool cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-    void loop(yolov5_pytorch_ros::BoundingBoxes);
-    void get_pos(std::string, float, float, landmark&);
+    void get_pos(std::string, float, float, struct landmark&);
+    void x_means(const ros::TimerEvent& e);
+    void k_means();
+    void calc_centroid(std::vector<std::array<float, 2>>&);
+    void allocate_id(std::vector<std::array<float, 2>>&);
+    int random(int);
     void read_yaml();
     void write_yaml();
-    void visualize_landmark(std::vector<landmark>&);
+    void visualize_landmark(std::vector<struct landmark>&);
 };
 
 register_landmark::register_landmark()
@@ -66,6 +78,8 @@ register_landmark::register_landmark()
     save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
+    // clustering_timer =nh_.createTimer(ros::Duration(5), &register_landmark::x_means, this);
+    visualize_landmark(lm_list_);
 }
 
 register_landmark::~register_landmark()
@@ -83,7 +97,16 @@ void register_landmark::cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
 {
-    loop(msg);
+    struct landmark lm;
+    for (const auto &b:msg.bounding_boxes)
+    {
+        auto itr = std::find(landmark_list.begin(), landmark_list.end(), b.Class);
+        if (b.probability > 0.9 && itr != landmark_list.end() && !cloud_.points.empty())
+        {
+            get_pos(b.Class, b.xmax, b.xmin, lm);
+            lm_list_.push_back(lm);
+        }
+    }
 }
 
 bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
@@ -93,36 +116,7 @@ bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Emp
     return true;
 }
 
-void register_landmark::loop(yolov5_pytorch_ros::BoundingBoxes bb)
-{
-    ROS_INFO("Registering landmark");
-    landmark lm;
-    for (const auto &b:bb.bounding_boxes)
-    {
-        if (cloud_.points.size() != 0 && b.probability > 0.9)
-        {
-            get_pos(b.Class, b.xmax, b.xmin, lm);
-            auto find_t = std::find(tmp_list_.begin(), tmp_list_.end(), b.Class);
-            auto find_l = std::find(landmark_list.begin(), landmark_list.end(), b.Class);
-            if (find_t == tmp_list_.end() && find_l != landmark_list.end())
-            {
-                tmp_list_.push_back(lm.class_);
-                lm_list_.push_back(lm);
-            }
-            float dist, min_dist = 1000000;
-            for (const auto &ll:lm_list_)
-            {
-                dist = std::hypot(ll.pos_[0] - lm.pos_[0], ll.pos_[1] - lm.pos_[1]);
-                if (dist < min_dist) {min_dist = dist;}
-            }
-            if (min_dist > dist_th) {lm_list_.push_back(lm);}
-        }
-    }
-    ROS_INFO("%ld landmark registered", lm_list_.size());
-    visualize_landmark(lm_list_);
-}
-
-void register_landmark::get_pos(std::string class_, float xmax_, float xmin_, landmark &lm)
+void register_landmark::get_pos(std::string class_, float xmax_, float xmin_, struct landmark &lm)
 {
     lm.class_ = class_;
     auto yaw_ = -((((xmax_ + xmin_) / 2) - (w_img_/2)) * M_PI) / (w_img_/2);
@@ -131,6 +125,88 @@ void register_landmark::get_pos(std::string class_, float xmax_, float xmin_, la
     lm.pos_[0] = cloud_.points[index].x;
     lm.pos_[1] = cloud_.points[index].y;
     lm.pos_[2] = 0.0;
+    lm.clusterID_ = random(6);
+}
+
+void register_landmark::x_means(const ros::TimerEvent& e)
+{
+    k_means();
+}
+
+void register_landmark::k_means()
+{
+    result_list_.clear();
+    struct landmark lm;
+    std::vector<std::array<float, 2>> centroid_list;
+    for (size_t i = 0; i < 10; i++)
+    {
+        calc_centroid(centroid_list);
+        allocate_id(centroid_list);
+        if (i < 9)
+        {
+            centroid_list.clear();
+        }
+    }
+    for (const auto &c:centroid_list)
+    {
+        lm.pos_[0] = c[0];
+        lm.pos_[1] = c[0];
+        lm.pos_[2] = 0.0;
+        result_list_.push_back(lm);
+    }
+    visualize_landmark(result_list_);
+}
+
+void register_landmark::calc_centroid(std::vector<std::array<float, 2>> &centroid_list)
+{
+    std::array<float, 2> centroid;
+    for (size_t i = 0; i < 6; i++)
+    {
+        float sum_x = 0, sum_y = 0;
+        int count = 0;
+        for (auto &lm:lm_list_)
+        {
+            if (lm.clusterID_ == i)
+            {
+                sum_x += lm.pos_[0];
+                sum_y += lm.pos_[1];
+                count++;
+            }
+        }
+        centroid[0] = sum_x / count;
+        centroid[1] = sum_y / count;
+        centroid_list.push_back(centroid);
+    }
+}
+
+void register_landmark::allocate_id(std::vector<std::array<float, 2>> &centroid_list)
+{
+    for (auto &lm:lm_list_)
+    {
+        float dist, min_dist;
+        bool first = true;
+        for (size_t i = 0; i < centroid_list.size(); i++)
+        {
+            dist = std::hypot(lm.pos_[0] - centroid_list[i][0], lm.pos_[1] - centroid_list[i][1]);
+            if (first)
+            {
+                min_dist = dist;
+                first = false;
+            }else if (dist < min_dist)
+            {
+                lm.clusterID_ = i;
+                min_dist = dist;
+            }
+        }
+    }
+}
+
+int register_landmark::random(int max)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, max - 1);
+    return dist(gen);
 }
 
 void register_landmark::read_yaml()
@@ -140,12 +216,12 @@ void register_landmark::read_yaml()
         struct landmark lm;
         YAML::Node node = YAML::LoadFile(landmark_file_path);
         YAML::Node landmark = node["landmark"];
-        for(YAML::const_iterator it=landmark.begin();it!=landmark.end();++it)
+        for(YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it)
         {
             std::string lm_name = it->first.as<std::string>();
             lm.class_ = lm_name;
             YAML::Node config = landmark[lm_name];
-            for(YAML::const_iterator it=config.begin();it!=config.end();++it)
+            for(YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
             {
                 std::string id = it->first.as<std::string>();
                 lm.pos_[0] = it->second["pose"][0].as<float>();
@@ -155,7 +231,11 @@ void register_landmark::read_yaml()
                 lm.option_ = it->second["option"].as<YAML::Node>();
                 lm_list_.push_back(lm);
             }
-            tmp_list_.push_back(lm_name);
+            auto itr = std::find(landmark_list_.begin(), landmark_list_.end(), lm_name);
+            if (itr == landmark_list_.end())
+            {
+                landmark_list_.push_back(lm_name);
+            }
         }
     }
     catch(const std::exception& e)
@@ -166,39 +246,46 @@ void register_landmark::read_yaml()
 
 void register_landmark::write_yaml()
 {
-    YAML::Emitter out;
-    out << YAML::BeginMap;
-    out << YAML::Key << "landmark";
-    out << YAML::BeginMap;
-    for (const auto &name:tmp_list_)
+    try
     {
-        out << YAML::Key << name;
+        std::ofstream fout(landmark_file_path);
+        YAML::Emitter out;
         out << YAML::BeginMap;
-        int count = 1;
-        for (const auto &ll:lm_list_)
+        out << YAML::Key << "landmark";
+        out << YAML::BeginMap;
+        for (const auto &name:landmark_list_)
         {
-            if (ll.class_ == name)
+            out << YAML::Key << name;
+            out << YAML::BeginMap;
+            int count = 1;
+            for (const auto &ll:lm_list_)
             {
-                std::string id = "id";
-                id += std::to_string(count);
-                out << YAML::Key << id;
-                out << YAML::BeginMap;
-                out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << ll.pos_[0] << ll.pos_[1] << ll.pos_[2] << YAML::EndSeq;
-                out << YAML::Key << "enable" << YAML::Value << true;
-                out << YAML::Key << "option" << YAML::Value << YAML::Null;
-                out << YAML::EndMap;
-                count++;
+                if (ll.class_ == name)
+                {
+                    std::string id = "id";
+                    id += std::to_string(count);
+                    out << YAML::Key << id;
+                    out << YAML::BeginMap;
+                    out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << ll.pos_[0] << ll.pos_[1] << ll.pos_[2] << YAML::EndSeq;
+                    out << YAML::Key << "enable" << YAML::Value << true;
+                    out << YAML::Key << "option" << YAML::Value << YAML::Null;
+                    out << YAML::EndMap;
+                    count++;
+                }
             }
+            out << YAML::EndMap;
         }
         out << YAML::EndMap;
+        out << YAML::EndMap;
+        fout << out.c_str();
     }
-    out << YAML::EndMap;
-    out << YAML::EndMap;
-    std::ofstream fout(landmark_file_path);
-    fout << out.c_str();
+    catch(const std::exception& e)
+    {
+        ROS_WARN("%s", e.what());
+    }
 }
 
-void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
+void register_landmark::visualize_landmark(std::vector<struct landmark> &lm_list)
 {
     visualization_msgs::Marker sphere_, text_;
     geometry_msgs::Point point_;
@@ -294,10 +381,11 @@ void register_landmark::visualize_landmark(std::vector<landmark> &lm_list)
     // marker_.scale.z = 0.5;
     // marker_pub_.publish(marker_);
 }
+}
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "Register_landmark");
-    register_landmark rl;
+    emcl::register_landmark rl;
     ros::Rate rate(1.0);
     while (ros::ok())
     {

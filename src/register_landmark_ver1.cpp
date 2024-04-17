@@ -21,6 +21,7 @@ private:
     ros::Subscriber scan_sub_;
     ros::Subscriber yolo_sub_;
     ros::ServiceServer save_srv_;
+    ros::Publisher marker_pub_;
     ros::Publisher sphere_pub_;
     ros::Publisher text_pub_;
     laser_geometry::LaserProjection projector_;
@@ -61,6 +62,7 @@ register_landmark::register_landmark()
     scan_sub_ = nh_.subscribe("/scan", 1, &register_landmark::cb_scan, this);
     yolo_sub_ = nh_.subscribe("/detected_objects_in_image", 1, &register_landmark::cb_yolo, this);
     save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
+    // marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 1);
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
 }
