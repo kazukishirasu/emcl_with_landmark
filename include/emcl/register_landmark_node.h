@@ -14,23 +14,16 @@
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
 #include <std_srvs/Empty.h>
 #include <visualization_msgs/Marker.h>
+#include "emcl/x_means.h"
 
 namespace emcl {
 
 class register_landmark
 {
-private:
-    ros::NodeHandle nh_;
-    ros::NodeHandle pnh_;
-    ros::Subscriber scan_sub_;
-    ros::Subscriber yolo_sub_;
-    ros::ServiceServer save_srv_;
-    ros::Publisher sphere_pub_;
-    ros::Publisher text_pub_;
-    laser_geometry::LaserProjection projector_;
-    tf::TransformListener listener_;
-    sensor_msgs::PointCloud cloud_;
-    int w_img_ = 1280;
+public:
+    register_landmark();
+    ~register_landmark();
+
     struct Pos
     {
         float x, y, z;
@@ -44,16 +37,7 @@ private:
         YAML::Node option_;
     };
     std::vector<Landmark> lm_list_;
-    std::vector<std::string> landmark_list_{};
 
-    //----------parameters----------
-    std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
-    // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
-    //------------------------------
-public:
-    register_landmark();
-    ~register_landmark();
     void cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg);
     void cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
     bool cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
@@ -61,6 +45,27 @@ public:
     void read_yaml();
     bool write_yaml();
     void visualize_landmark();
+private:
+    ros::NodeHandle nh_;
+    ros::NodeHandle pnh_;
+    ros::Subscriber scan_sub_;
+    ros::Subscriber yolo_sub_;
+    ros::ServiceServer save_srv_;
+    ros::Publisher sphere_pub_;
+    ros::Publisher text_pub_;
+    ros::Timer clustering_timer;
+    laser_geometry::LaserProjection projector_;
+    tf::TransformListener listener_;
+    sensor_msgs::PointCloud cloud_;
+    // emcl::x_means xm;
+    int w_img_ = 1280;
+    std::vector<std::string> landmark_list_{};
+
+    //----------parameters----------
+    std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
+    // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
+    //------------------------------
 };
 
 }

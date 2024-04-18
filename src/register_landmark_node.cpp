@@ -11,6 +11,8 @@ register_landmark::register_landmark()
     save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
+    read_yaml();
+    clustering_timer = nh_.createTimer(ros::Duration(5), &emcl::x_means::main, this);
 }
 
 register_landmark::~register_landmark()
@@ -65,6 +67,7 @@ void register_landmark::read_yaml()
 {
     try
     {
+        for (const auto &ll:landmark_list){landmark_list_.push_back(ll);}
         struct Landmark lm;
         YAML::Node node = YAML::LoadFile(landmark_file_path);
         YAML::Node landmark = node["landmark"];
@@ -100,7 +103,6 @@ bool register_landmark::write_yaml()
 {
     try
     {
-        std::ofstream fout(landmark_file_path);
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "landmark";
@@ -129,6 +131,7 @@ bool register_landmark::write_yaml()
         }
         out << YAML::EndMap;
         out << YAML::EndMap;
+        std::ofstream fout(landmark_file_path);
         fout << out.c_str();
         return true;
     }
@@ -173,6 +176,7 @@ void register_landmark::visualize_landmark()
     int i = 0;
     for (const auto &ll:lm_list_)
     {
+        ROS_WARN("random ID: %d", ll.clusterID_);
         text_.text = ll.class_.c_str();
         sphere_.pose.position.x = ll.pos_.x;
         sphere_.pose.position.y = ll.pos_.y;
@@ -194,7 +198,7 @@ void register_landmark::visualize_landmark()
         text_pub_.publish(text_);
         i++;
     }
-    
+
     // visualization_msgs::Marker marker_;
     // geometry_msgs::Point point_;
     // std_msgs::ColorRGBA color_;

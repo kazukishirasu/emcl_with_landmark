@@ -5,10 +5,10 @@ namespace emcl {
 
 class kf
 {
-private:
 public:
     kf();
     ~kf();
+private:
 };
 
 }
