@@ -1,18 +1,19 @@
 #ifndef X_MEANS_H_
 #define X_MEANS_H_
 
-#include "emcl/register_landmark_node.h"
+#include <ros/ros.h>
+#include <string>
 #include <random>
+#include <vector>
+#include "emcl/landmark_struct.h"
 
 namespace emcl {
 
-class x_means : public register_landmark
+class x_means
 {
 public:
     x_means();
     ~x_means();
-    int main(const ros::TimerEvent&);
-    void initialization(std::vector<Landmark>&);
     int random(int, int);
 private:
 };

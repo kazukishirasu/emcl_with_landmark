@@ -12,7 +12,7 @@ register_landmark::register_landmark()
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
     read_yaml();
-    clustering_timer = nh_.createTimer(ros::Duration(5), &emcl::x_means::main, this);
+    clustering_timer = nh_.createTimer(ros::Duration(5), &register_landmark::clustering, this);
 }
 
 register_landmark::~register_landmark()
@@ -61,6 +61,11 @@ void register_landmark::get_pos(std::string Class, float xmax, float xmin, struc
     lm.pos_.x = cloud_.points[index].x;
     lm.pos_.y = cloud_.points[index].y;
     lm.pos_.z = 0.0;
+    lm.clusterID_ = xm.random(0, 1);
+}
+
+void register_landmark::clustering(const ros::TimerEvent& e)
+{
 }
 
 void register_landmark::read_yaml()

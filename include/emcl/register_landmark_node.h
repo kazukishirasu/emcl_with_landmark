@@ -14,6 +14,7 @@
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
 #include <std_srvs/Empty.h>
 #include <visualization_msgs/Marker.h>
+#include "emcl/landmark_struct.h"
 #include "emcl/x_means.h"
 
 namespace emcl {
@@ -23,25 +24,11 @@ class register_landmark
 public:
     register_landmark();
     ~register_landmark();
-
-    struct Pos
-    {
-        float x, y, z;
-    };
-    struct Landmark
-    {
-        std::string class_;
-        Pos pos_;
-        int clusterID_;
-        bool enable_;
-        YAML::Node option_;
-    };
-    std::vector<Landmark> lm_list_;
-
     void cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg);
     void cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
     bool cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
     void get_pos(std::string, float, float, Landmark&);
+    void clustering(const ros::TimerEvent&);
     void read_yaml();
     bool write_yaml();
     void visualize_landmark();
@@ -57,8 +44,9 @@ private:
     laser_geometry::LaserProjection projector_;
     tf::TransformListener listener_;
     sensor_msgs::PointCloud cloud_;
-    // emcl::x_means xm;
+    x_means xm;
     int w_img_ = 1280;
+    std::vector<Landmark> lm_list_;
     std::vector<std::string> landmark_list_{};
 
     //----------parameters----------
