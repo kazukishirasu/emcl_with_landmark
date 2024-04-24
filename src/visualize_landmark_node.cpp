@@ -4,6 +4,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include <visualization_msgs/Marker.h>
+#include "emcl/landmark_struct.h"
 
 class visualize_landmark_node
 {
@@ -12,18 +13,6 @@ private:
     ros::NodeHandle pnh_;
     ros::Publisher sphere_pub_;
     ros::Publisher text_pub_;
-    struct Pos
-    {
-        float x, y, z;
-    };
-    struct Landmark
-    {
-        std::string class_;
-        Pos pos_;
-        int clusterID_;
-        bool enable_;
-        YAML::Node option_;
-    };
     std::vector<Landmark> lm_list_;
 
     //----------parameters----------

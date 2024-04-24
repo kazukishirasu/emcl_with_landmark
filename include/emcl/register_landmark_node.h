@@ -27,6 +27,7 @@ public:
     void cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg);
     void cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg);
     bool cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+    void loop();
     void get_pos(std::string, float, float, Landmark&);
     void clustering(const ros::TimerEvent&);
     void read_yaml();
@@ -46,11 +47,11 @@ private:
     sensor_msgs::PointCloud cloud_;
     x_means xm;
     int w_img_ = 1280;
-    std::vector<Landmark> lm_list_;
-    std::vector<std::string> landmark_list_{};
+    std::vector<Landmark> before_clustering_{}, after_clustering_{};
+    std::vector<std::string> save_name_{};
 
     //----------parameters----------
-    std::vector<std::string> landmark_list{"Door", "Elevator", "Vending machine"};
+    std::vector<std::string> landmark_name{"Door", "Elevator", "Vending machine"};
     std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
