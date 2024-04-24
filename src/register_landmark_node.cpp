@@ -30,27 +30,27 @@ void register_landmark::cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
 {
-    // struct Landmark lm;
-    // for (const auto &b:msg.bounding_boxes)
-    // {
-    //     auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
-    //     if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
-    //     {
-    //         get_pos(b.Class, b.xmax, b.xmin, lm);
-    //         before_clustering_.push_back(lm);
-    //     }
-    // }
-
     struct Landmark lm;
     for (const auto &b:msg.bounding_boxes)
     {
         auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
-        if (before_clustering_.size() < 200 && b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+        if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
         {
             get_pos(b.Class, b.xmax, b.xmin, lm);
             before_clustering_.push_back(lm);
         }
     }
+
+    // struct Landmark lm;
+    // for (const auto &b:msg.bounding_boxes)
+    // {
+    //     auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
+    //     if (before_clustering_.size() < 200 && b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+    //     {
+    //         get_pos(b.Class, b.xmax, b.xmin, lm);
+    //         before_clustering_.push_back(lm);
+    //     }
+    // }
 }
 
 bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
@@ -64,7 +64,7 @@ bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Emp
 
 void register_landmark::loop()
 {
-    visualize_landmark();
+    visualize_landmark(after_clustering_);
 }
 
 void register_landmark::get_pos(std::string Class, float xmax, float xmin, struct Landmark& lm)
@@ -163,7 +163,7 @@ bool register_landmark::write_yaml()
     }
 }
 
-void register_landmark::visualize_landmark()
+void register_landmark::visualize_landmark(std::vector<Landmark>& lm_list)
 {
     visualization_msgs::Marker sphere_, text_;
     geometry_msgs::Point point_;
@@ -195,15 +195,15 @@ void register_landmark::visualize_landmark()
     text_.scale.z = 0.5;
 
     int i = 0;
-    for (const auto &ac:after_clustering_)
+    for (const auto &ll:lm_list)
     {
-        text_.text = ac.class_.c_str();
-        sphere_.pose.position.x = ac.pos_.x;
-        sphere_.pose.position.y = ac.pos_.y;
-        sphere_.pose.position.z = ac.pos_.z;
-        text_.pose.position.x = ac.pos_.x;
-        text_.pose.position.y = ac.pos_.y + 0.4;
-        text_.pose.position.z = ac.pos_.z;
+        text_.text = ll.class_.c_str();
+        sphere_.pose.position.x = ll.pos_.x;
+        sphere_.pose.position.y = ll.pos_.y;
+        sphere_.pose.position.z = ll.pos_.z;
+        text_.pose.position.x = ll.pos_.x;
+        text_.pose.position.y = ll.pos_.y + 0.4;
+        text_.pose.position.z = ll.pos_.z;
         sphere_.color.r = 0.0;
         sphere_.color.g = 0.0;
         sphere_.color.b = 1.0;

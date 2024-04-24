@@ -32,7 +32,7 @@ public:
     void clustering(const ros::TimerEvent&);
     void read_yaml();
     bool write_yaml();
-    void visualize_landmark();
+    void visualize_landmark(std::vector<Landmark>&);
 private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;

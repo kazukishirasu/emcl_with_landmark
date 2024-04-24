@@ -13,24 +13,26 @@ x_means::~x_means()
 void x_means::main(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
     k_means(bc, ac);
+    ROS_INFO("size of bc: %ld", bc.size());
 }
 
 void x_means::k_means(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
+    bool finish = false;
     if (!bc.empty())
     {
         initialization(bc, ac);
-        for (size_t i = 0; i < 100; i++)
+        while (!finish)
         {
             calc_centroid(bc, ac);
-            allocate_id(bc, ac);
-            if (i < 99)
+            allocate_id(bc, ac, finish);
+            if (!finish)
             {
                 ac.clear();
             }
+            ROS_INFO("--------------------");
         }
     }
-    ROS_INFO("size of bc: %ld", bc.size());
 }
 
 void x_means::initialization(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
@@ -72,14 +74,15 @@ void x_means::calc_centroid(std::vector<Landmark>& bc, std::vector<Landmark>& ac
         lm.pos_.y = sum_y/num;
         ac.push_back(lm);
     }
-    ROS_INFO("--------------------");
 }
 
-void x_means::allocate_id(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
+void x_means::allocate_id(std::vector<Landmark>& bc, std::vector<Landmark>& ac, bool& finish)
 {
+    finish = true;
     for (auto &b:bc)
     {
         float dist, min_dist = 1000000;
+        int old_ID = b.clusterID_;
         for (const auto &a:ac)
         {
             dist = std::hypot(a.pos_.x - b.pos_.x, a.pos_.y - b.pos_.y);
@@ -88,6 +91,10 @@ void x_means::allocate_id(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
                 min_dist = dist;
                 b.clusterID_ = a.clusterID_;
             }
+        }
+        if (old_ID != b.clusterID_)
+        {
+            finish = false;
         }
     }
 }
