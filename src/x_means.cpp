@@ -12,49 +12,56 @@ x_means::~x_means()
 
 void x_means::main(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
-    k_means(bc, ac);
     ROS_INFO("size of bc: %ld", bc.size());
+    if (!bc.empty())
+    {
+        k_means(bc, ac);
+    }
 }
 
 void x_means::k_means(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
     bool finish = false;
-    if (!bc.empty())
+    init(bc, ac);
+    while (!finish)
     {
-        initialization(bc, ac);
-        while (!finish)
+        calc_centroid(bc, ac);
+        allocate_id(bc, ac, finish);
+        if (!finish)
         {
-            calc_centroid(bc, ac);
-            allocate_id(bc, ac, finish);
-            if (!finish)
-            {
-                ac.clear();
-            }
-            ROS_INFO("--------------------");
+            ac.clear();
         }
+        ROS_INFO("--------------------");
     }
 }
 
-void x_means::initialization(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
-{
+void x_means::init(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
+{   
     struct Landmark lm;
     for (auto &b:bc)
     {
         b.clusterID_ = random(0, cluster_n);
     }
-    for (size_t i = 0; i < cluster_n; i++)
+
+    std::vector<int> num;
+    while (num.size() < cluster_n)
     {
-        int num = random(0, bc.size());
-        lm = bc[num];
+        num.push_back(random(0, bc.size() - 1));
+        std::sort(num.begin(), num.end());
+        num.erase(std::unique(num.begin(), num.end()), num.end());
+    }
+    for (const auto &n:num)
+    {
+        lm = bc[n];
         ac.push_back(lm);
     }
 }
 
 void x_means::calc_centroid(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
+    struct Landmark lm;
     for (size_t i = 0; i < cluster_n; i++)
     {
-        struct Landmark lm;
         float sum_x = 0, sum_y = 0;
         int num = 0;
         for (const auto &b:bc)

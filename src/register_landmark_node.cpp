@@ -266,7 +266,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "register_landmark_node");
     emcl::register_landmark rl;
-    ros::Rate rate(1.0);
+    ros::Rate rate(0.5);
     while (ros::ok())
     {
         ros::spinOnce();

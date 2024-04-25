@@ -5,6 +5,7 @@
 #include <string>
 #include <random>
 #include <vector>
+#include <algorithm>
 #include "emcl/landmark_struct.h"
 
 namespace emcl {
@@ -16,7 +17,7 @@ public:
     ~x_means();
     void main(std::vector<Landmark>&, std::vector<Landmark>&);
     void k_means(std::vector<Landmark>&, std::vector<Landmark>&);
-    void initialization(std::vector<Landmark>&, std::vector<Landmark>&);
+    void init(std::vector<Landmark>&, std::vector<Landmark>&);
     void calc_centroid(std::vector<Landmark>&, std::vector<Landmark>&);
     void allocate_id(std::vector<Landmark>&, std::vector<Landmark>&, bool&);
     int random(int, int);
