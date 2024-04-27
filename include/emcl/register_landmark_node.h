@@ -5,6 +5,7 @@
 #include <ros/package.h>
 #include <string>
 #include <vector>
+#include <complex>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <sensor_msgs/LaserScan.h>
@@ -31,7 +32,7 @@ public:
     void get_pos(std::string, float, float, Landmark&);
     void clustering(const ros::TimerEvent&);
     void read_yaml();
-    bool write_yaml();
+    bool write_yaml(std::vector<Landmark>&);
     void visualize_landmark(std::vector<Landmark>&);
 private:
     ros::NodeHandle nh_;
@@ -52,7 +53,7 @@ private:
 
     //----------parameters----------
     std::vector<std::string> landmark_name{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver7.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
 };

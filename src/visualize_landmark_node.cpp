@@ -16,7 +16,7 @@ private:
     std::vector<Landmark> lm_list_;
 
     //----------parameters----------
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/tsudanuma2-3_sim.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver6.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
 public:
@@ -24,7 +24,7 @@ public:
     ~visualize_landmark_node();
     void loop();
     void read_yaml();
-    void visualize_landmark();
+    void visualize_landmark(std::vector<Landmark>&);
 };
 
 visualize_landmark_node::visualize_landmark_node()
@@ -33,7 +33,6 @@ visualize_landmark_node::visualize_landmark_node()
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
     read_yaml();
-    visualize_landmark();
 }
 
 visualize_landmark_node::~visualize_landmark_node()
@@ -42,7 +41,7 @@ visualize_landmark_node::~visualize_landmark_node()
 
 void visualize_landmark_node::loop()
 {
-    
+    visualize_landmark(lm_list_);
 }
 
 void visualize_landmark_node::read_yaml()
@@ -75,101 +74,101 @@ void visualize_landmark_node::read_yaml()
     }
 }
 
-void visualize_landmark_node::visualize_landmark()
+void visualize_landmark_node::visualize_landmark(std::vector<Landmark>& lm_list)
 {
-    visualization_msgs::Marker sphere_, text_;
-    geometry_msgs::Point point_;
-    std_msgs::ColorRGBA color_;
-    sphere_.header.frame_id = "map";
-    sphere_.header.stamp = ros::Time::now();
-    sphere_.ns = "sphere";
-    sphere_.type = visualization_msgs::Marker::SPHERE;
-    sphere_.action = visualization_msgs::Marker::ADD;
-    sphere_.pose.orientation.x = 0.0;
-    sphere_.pose.orientation.y = 0.0;
-    sphere_.pose.orientation.z = 0.0;
-    sphere_.pose.orientation.w = 1.0;
-    sphere_.scale.x = 0.5;
-    sphere_.scale.y = 0.5;
-    sphere_.scale.z = 0.5;
-
-    text_.header.frame_id = "map";
-    text_.header.stamp = ros::Time::now();
-    text_.ns = "text";
-    text_.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    text_.action = visualization_msgs::Marker::ADD;
-    text_.pose.orientation.x = 0.0;
-    text_.pose.orientation.y = 0.0;
-    text_.pose.orientation.z = 0.0;
-    text_.pose.orientation.w = 1.0;
-    text_.scale.x = 0.5;
-    text_.scale.y = 0.5;
-    text_.scale.z = 0.5;
-
-    int i = 0;
-    for (const auto &ll:lm_list_)
-    {
-        text_.text = ll.class_.c_str();
-        sphere_.pose.position.x = ll.pos_.x;
-        sphere_.pose.position.y = ll.pos_.y;
-        sphere_.pose.position.z = ll.pos_.z;
-        text_.pose.position.x = ll.pos_.x;
-        text_.pose.position.y = ll.pos_.y + 0.4;
-        text_.pose.position.z = ll.pos_.z;
-        sphere_.color.r = 0.0;
-        sphere_.color.g = 0.0;
-        sphere_.color.b = 1.0;
-        sphere_.color.a = 0.8;
-        text_.color.r = 1.0;
-        text_.color.g = 1.0;
-        text_.color.b = 1.0;
-        text_.color.a = 1.0;
-        sphere_.id = i;
-        text_.id = i;
-        sphere_pub_.publish(sphere_);
-        text_pub_.publish(text_);
-        i++;
-    }
-    
-    // visualization_msgs::Marker marker_;
+    // visualization_msgs::Marker sphere_, text_;
     // geometry_msgs::Point point_;
     // std_msgs::ColorRGBA color_;
-    // for (const auto &lm:lm_list)
+    // sphere_.header.frame_id = "map";
+    // sphere_.header.stamp = ros::Time::now();
+    // sphere_.ns = "sphere";
+    // sphere_.type = visualization_msgs::Marker::SPHERE;
+    // sphere_.action = visualization_msgs::Marker::ADD;
+    // sphere_.pose.orientation.x = 0.0;
+    // sphere_.pose.orientation.y = 0.0;
+    // sphere_.pose.orientation.z = 0.0;
+    // sphere_.pose.orientation.w = 1.0;
+    // sphere_.scale.x = 0.5;
+    // sphere_.scale.y = 0.5;
+    // sphere_.scale.z = 0.5;
+
+    // text_.header.frame_id = "map";
+    // text_.header.stamp = ros::Time::now();
+    // text_.ns = "text";
+    // text_.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    // text_.action = visualization_msgs::Marker::ADD;
+    // text_.pose.orientation.x = 0.0;
+    // text_.pose.orientation.y = 0.0;
+    // text_.pose.orientation.z = 0.0;
+    // text_.pose.orientation.w = 1.0;
+    // text_.scale.x = 0.5;
+    // text_.scale.y = 0.5;
+    // text_.scale.z = 0.5;
+
+    // int i = 0;
+    // for (const auto &ll:lm_list)
     // {
-    //     point_.x = lm.pos_.x;
-    //     point_.y = lm.pos_.y;
-    //     point_.z = lm.pos_.z;
-    //     marker_.points.push_back(point_);
-    //     if (lm.class_ == "Elevator"){
-    //         color_.r = 0.0;
-    //         color_.g = 0.0;
-    //         color_.b = 1.0;
-    //     }else if (lm.class_ == "Door"){
-    //         color_.r = 0.90;
-    //         color_.g = 0.71;
-    //         color_.b = 0.13;
-    //     }else{
-    //         color_.r = 1.0;
-    //         color_.g = 0.0;
-    //         color_.b = 0.0;
-    //     }
-    //     color_.a = 1.0;
-    //     marker_.colors.push_back(color_);
+    //     text_.text = ll.class_.c_str();
+    //     sphere_.pose.position.x = ll.pos_.x;
+    //     sphere_.pose.position.y = ll.pos_.y;
+    //     sphere_.pose.position.z = ll.pos_.z;
+    //     text_.pose.position.x = ll.pos_.x;
+    //     text_.pose.position.y = ll.pos_.y + 0.4;
+    //     text_.pose.position.z = ll.pos_.z;
+    //     sphere_.color.r = 0.0;
+    //     sphere_.color.g = 0.0;
+    //     sphere_.color.b = 1.0;
+    //     sphere_.color.a = 0.8;
+    //     text_.color.r = 1.0;
+    //     text_.color.g = 1.0;
+    //     text_.color.b = 1.0;
+    //     text_.color.a = 1.0;
+    //     sphere_.id = i;
+    //     text_.id = i;
+    //     sphere_pub_.publish(sphere_);
+    //     text_pub_.publish(text_);
+    //     i++;
     // }
-    // marker_.header.frame_id = "map";
-    // marker_.header.stamp = ros::Time::now();
-    // marker_.ns = "sphere";
-    // marker_.id = 0;
-    // marker_.type = visualization_msgs::Marker::SPHERE_LIST;
-    // marker_.action = visualization_msgs::Marker::ADD;
-    // marker_.pose.orientation.x = 0.0;
-    // marker_.pose.orientation.y = 0.0;
-    // marker_.pose.orientation.z = 0.0;
-    // marker_.pose.orientation.w = 1.0;
-    // marker_.scale.x = 0.5;
-    // marker_.scale.y = 0.5;
-    // marker_.scale.z = 0.5;
-    // sphere_pub_.publish(marker_);
+    
+    visualization_msgs::Marker marker_;
+    geometry_msgs::Point point_;
+    std_msgs::ColorRGBA color_;
+    for (const auto &lm:lm_list)
+    {
+        point_.x = lm.pos_.x;
+        point_.y = lm.pos_.y;
+        point_.z = lm.pos_.z;
+        marker_.points.push_back(point_);
+        if (lm.class_ == "Elevator"){
+            color_.r = 0.0;
+            color_.g = 0.0;
+            color_.b = 1.0;
+        }else if (lm.class_ == "Door"){
+            color_.r = 0.90;
+            color_.g = 0.71;
+            color_.b = 0.13;
+        }else{
+            color_.r = 1.0;
+            color_.g = 0.0;
+            color_.b = 0.0;
+        }
+        color_.a = 1.0;
+        marker_.colors.push_back(color_);
+    }
+    marker_.header.frame_id = "map";
+    marker_.header.stamp = ros::Time::now();
+    marker_.ns = "sphere";
+    marker_.id = 0;
+    marker_.type = visualization_msgs::Marker::SPHERE_LIST;
+    marker_.action = visualization_msgs::Marker::ADD;
+    marker_.pose.orientation.x = 0.0;
+    marker_.pose.orientation.y = 0.0;
+    marker_.pose.orientation.z = 0.0;
+    marker_.pose.orientation.w = 1.0;
+    marker_.scale.x = 0.5;
+    marker_.scale.y = 0.5;
+    marker_.scale.z = 0.5;
+    sphere_pub_.publish(marker_);
 }
 
 int main(int argc, char **argv)

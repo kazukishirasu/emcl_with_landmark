@@ -6,13 +6,13 @@ namespace emcl
 register_landmark::register_landmark()
 {
     ROS_INFO("Start register_landmark_node");
-    scan_sub_ = nh_.subscribe("/scan", 1, &register_landmark::cb_scan, this);
-    yolo_sub_ = nh_.subscribe("/detected_objects_in_image", 1, &register_landmark::cb_yolo, this);
+    scan_sub_ = nh_.subscribe("/scan", 30, &register_landmark::cb_scan, this);
+    yolo_sub_ = nh_.subscribe("/detected_objects_in_image", 30, &register_landmark::cb_yolo, this);
     save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
     read_yaml();
-    clustering_timer = nh_.createTimer(ros::Duration(10), &register_landmark::clustering, this);
+    // clustering_timer = nh_.createTimer(ros::Duration(10), &register_landmark::clustering, this);
 }
 
 register_landmark::~register_landmark()
@@ -30,41 +30,50 @@ void register_landmark::cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
 {
-    struct Landmark lm;
-    for (const auto &b:msg.bounding_boxes)
+    if (std::abs(msg.header.stamp.toSec() - cloud_.header.stamp.toSec()) < 0.01)
     {
-        auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
-        if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+        struct Landmark lm;
+        for (const auto &b:msg.bounding_boxes)
         {
-            get_pos(b.Class, b.xmax, b.xmin, lm);
-            before_clustering_.push_back(lm);
+            auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
+            if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+            {
+                get_pos(b.Class, b.xmax, b.xmin, lm);
+                before_clustering_.push_back(lm);
+                ROS_INFO("scan time stamp: %lf", cloud_.header.stamp.toSec());
+                ROS_INFO("yolo time stamp: %lf" ,msg.header.stamp.toSec());
+            }
         }
+        ROS_INFO("====================");
     }
 
     // struct Landmark lm;
     // for (const auto &b:msg.bounding_boxes)
     // {
     //     auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
-    //     if (before_clustering_.size() < 200 && b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+    //     if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
     //     {
     //         get_pos(b.Class, b.xmax, b.xmin, lm);
     //         before_clustering_.push_back(lm);
     //     }
     // }
+    // ROS_INFO("====================");
 }
 
 bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
-    if (write_yaml())
+    if (write_yaml(before_clustering_))
     {
         ROS_INFO("Landmark saved successfully");
+        return true;
+    }else{
+        return false;
     }
-    return true;
 }
 
 void register_landmark::loop()
 {
-    visualize_landmark(after_clustering_);
+    visualize_landmark(before_clustering_);
 }
 
 void register_landmark::get_pos(std::string Class, float xmax, float xmin, struct Landmark& lm)
@@ -80,8 +89,11 @@ void register_landmark::get_pos(std::string Class, float xmax, float xmin, struc
 
 void register_landmark::clustering(const ros::TimerEvent& e)
 {
-    xm.main(before_clustering_, after_clustering_);
-    ROS_INFO("====================");
+    if (!before_clustering_.empty())
+    {
+        xm.main(before_clustering_, after_clustering_);
+        ROS_INFO("====================");
+    }
 }
 
 void register_landmark::read_yaml()
@@ -120,7 +132,7 @@ void register_landmark::read_yaml()
     }
 }
 
-bool register_landmark::write_yaml()
+bool register_landmark::write_yaml(std::vector<Landmark>& lm_list)
 {
     try
     {
@@ -133,15 +145,15 @@ bool register_landmark::write_yaml()
             out << YAML::Key << name;
             out << YAML::BeginMap;
             int count = 1;
-            for (const auto &ac:after_clustering_)
+            for (const auto &lm:lm_list)
             {
-                if (ac.class_ == name)
+                if (lm.class_ == name)
                 {
                     std::string id = "id";
                     id += std::to_string(count);
                     out << YAML::Key << id;
                     out << YAML::BeginMap;
-                    out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << ac.pos_.x << ac.pos_.y << ac.pos_.z << YAML::EndSeq;
+                    out << YAML::Key << "pose" << YAML::Value << YAML::Flow << YAML::BeginSeq << lm.pos_.x << lm.pos_.y << lm.pos_.z << YAML::EndSeq;
                     out << YAML::Key << "enable" << YAML::Value << true;
                     out << YAML::Key << "option" << YAML::Value << YAML::Null;
                     out << YAML::EndMap;
@@ -165,6 +177,7 @@ bool register_landmark::write_yaml()
 
 void register_landmark::visualize_landmark(std::vector<Landmark>& lm_list)
 {
+    //----------new----------
     visualization_msgs::Marker sphere_, text_;
     geometry_msgs::Point point_;
     std_msgs::ColorRGBA color_;
@@ -219,6 +232,7 @@ void register_landmark::visualize_landmark(std::vector<Landmark>& lm_list)
         i++;
     }
 
+    //----------old----------
     // visualization_msgs::Marker marker_;
     // geometry_msgs::Point point_;
     // std_msgs::ColorRGBA color_;
@@ -266,7 +280,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "register_landmark_node");
     emcl::register_landmark rl;
-    ros::Rate rate(0.5);
+    ros::Rate rate(1.0);
     while (ros::ok())
     {
         ros::spinOnce();

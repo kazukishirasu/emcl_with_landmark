@@ -13,10 +13,7 @@ x_means::~x_means()
 void x_means::main(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
 {
     ROS_INFO("size of bc: %ld", bc.size());
-    if (!bc.empty())
-    {
-        k_means(bc, ac);
-    }
+    k_means(bc, ac);
 }
 
 void x_means::k_means(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
@@ -46,7 +43,7 @@ void x_means::init(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
     std::vector<int> num;
     while (num.size() < cluster_n)
     {
-        num.push_back(random(0, bc.size() - 1));
+        num.push_back(random(0, bc.size()));
         std::sort(num.begin(), num.end());
         num.erase(std::unique(num.begin(), num.end()), num.end());
     }
@@ -55,6 +52,10 @@ void x_means::init(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
         lm = bc[n];
         ac.push_back(lm);
     }
+}
+
+void x_means::calc_bic()
+{
 }
 
 void x_means::calc_centroid(std::vector<Landmark>& bc, std::vector<Landmark>& ac)
