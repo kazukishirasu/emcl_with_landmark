@@ -10,7 +10,6 @@ struct Pos
 };
 struct Landmark
 {
-    std::string class_;
     Pos pos_;
     int clusterID_;
     bool enable_;

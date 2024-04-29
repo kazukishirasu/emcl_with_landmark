@@ -15,7 +15,7 @@ class x_means
 public:
     x_means();
     ~x_means();
-    void main(std::vector<Landmark>&, std::vector<Landmark>&);
+    void main(std::vector<std::vector<Landmark>>&, std::vector<std::vector<Landmark>>&);
     void k_means(std::vector<Landmark>&, std::vector<Landmark>&);
     void init(std::vector<Landmark>&, std::vector<Landmark>&);
     void calc_bic();
@@ -23,7 +23,7 @@ public:
     void allocate_id(std::vector<Landmark>&, std::vector<Landmark>&, bool&);
     int random(int, int);
 private:
-    int cluster_n = 6;
+    int cluster_n;
 };
 
 }

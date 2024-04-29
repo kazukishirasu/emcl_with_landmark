@@ -13,10 +13,11 @@ private:
     ros::NodeHandle pnh_;
     ros::Publisher sphere_pub_;
     ros::Publisher text_pub_;
-    std::vector<Landmark> lm_list_;
+    std::vector<std::string> landmark_name_{};
+    std::vector<std::vector<Landmark>> lm_list_;
 
     //----------parameters----------
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver6.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
 public:
@@ -24,15 +25,15 @@ public:
     ~visualize_landmark_node();
     void loop();
     void read_yaml();
-    void visualize_landmark(std::vector<Landmark>&);
+    void visualize_landmark(std::vector<std::vector<Landmark>>&);
 };
 
 visualize_landmark_node::visualize_landmark_node()
 {
     ROS_INFO("Start visualize_landmark_node");
+    read_yaml();
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
-    read_yaml();
 }
 
 visualize_landmark_node::~visualize_landmark_node()
@@ -51,21 +52,30 @@ void visualize_landmark_node::read_yaml()
         struct Landmark lm;
         YAML::Node node = YAML::LoadFile(landmark_file_path);
         YAML::Node landmark = node["landmark"];
-        for(YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it)
+        int index = 0;
+        for (YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it)
         {
             std::string lm_name = it->first.as<std::string>();
-            lm.class_ = lm_name;
+            landmark_name_.push_back(lm_name);
             YAML::Node config = landmark[lm_name];
-            for(YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
+            bool first = true;
+            for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
             {
+                if (first)
+                {
+                    std::vector<Landmark> class_n;
+                    lm_list_.push_back(class_n);
+                    first = false;
+                }
                 std::string id = it->first.as<std::string>();
                 lm.pos_.x = it->second["pose"][0].as<float>();
                 lm.pos_.y = it->second["pose"][1].as<float>();
                 lm.pos_.z = it->second["pose"][2].as<float>();
                 lm.enable_ = it->second["enable"].as<bool>();
                 lm.option_ = it->second["option"].as<YAML::Node>();
-                lm_list_.push_back(lm);
+                lm_list_[index].push_back(lm);
             }
+            index++;
         }
     }
     catch(const std::exception& e)
@@ -74,7 +84,7 @@ void visualize_landmark_node::read_yaml()
     }
 }
 
-void visualize_landmark_node::visualize_landmark(std::vector<Landmark>& lm_list)
+void visualize_landmark_node::visualize_landmark(std::vector<std::vector<Landmark>>& lm_list)
 {
     // visualization_msgs::Marker sphere_, text_;
     // geometry_msgs::Point point_;
@@ -105,55 +115,66 @@ void visualize_landmark_node::visualize_landmark(std::vector<Landmark>& lm_list)
     // text_.scale.y = 0.5;
     // text_.scale.z = 0.5;
 
-    // int i = 0;
+    // int index = 0;
     // for (const auto &ll:lm_list)
     // {
-    //     text_.text = ll.class_.c_str();
-    //     sphere_.pose.position.x = ll.pos_.x;
-    //     sphere_.pose.position.y = ll.pos_.y;
-    //     sphere_.pose.position.z = ll.pos_.z;
-    //     text_.pose.position.x = ll.pos_.x;
-    //     text_.pose.position.y = ll.pos_.y + 0.4;
-    //     text_.pose.position.z = ll.pos_.z;
-    //     sphere_.color.r = 0.0;
-    //     sphere_.color.g = 0.0;
-    //     sphere_.color.b = 1.0;
-    //     sphere_.color.a = 0.8;
-    //     text_.color.r = 1.0;
-    //     text_.color.g = 1.0;
-    //     text_.color.b = 1.0;
-    //     text_.color.a = 1.0;
-    //     sphere_.id = i;
-    //     text_.id = i;
-    //     sphere_pub_.publish(sphere_);
-    //     text_pub_.publish(text_);
-    //     i++;
+    //     text_.text = landmark_name_[index];
+    //     int id = 0;
+    //     for (const auto &l:ll)
+    //     {
+    //         sphere_.pose.position.x = l.pos_.x;
+    //         sphere_.pose.position.y = l.pos_.y;
+    //         sphere_.pose.position.z = l.pos_.z;
+    //         text_.pose.position.x = l.pos_.x;
+    //         text_.pose.position.y = l.pos_.y + 0.4;
+    //         text_.pose.position.z = l.pos_.z;
+    //         sphere_.color.r = 0.0;
+    //         sphere_.color.g = 0.0;
+    //         sphere_.color.b = 1.0;
+    //         sphere_.color.a = 0.8;
+    //         text_.color.r = 1.0;
+    //         text_.color.g = 1.0;
+    //         text_.color.b = 1.0;
+    //         text_.color.a = 1.0;
+    //         sphere_.id = id;
+    //         text_.id = id;
+    //         sphere_pub_.publish(sphere_);
+    //         text_pub_.publish(text_);
+    //         id++;
+    //     }
+    //     index++;
     // }
-    
+
     visualization_msgs::Marker marker_;
     geometry_msgs::Point point_;
     std_msgs::ColorRGBA color_;
-    for (const auto &lm:lm_list)
+    int index = 0;
+    for (const auto &ll:lm_list)
     {
-        point_.x = lm.pos_.x;
-        point_.y = lm.pos_.y;
-        point_.z = lm.pos_.z;
-        marker_.points.push_back(point_);
-        if (lm.class_ == "Elevator"){
-            color_.r = 0.0;
-            color_.g = 0.0;
-            color_.b = 1.0;
-        }else if (lm.class_ == "Door"){
-            color_.r = 0.90;
-            color_.g = 0.71;
-            color_.b = 0.13;
-        }else{
-            color_.r = 1.0;
-            color_.g = 0.0;
-            color_.b = 0.0;
+        std::string class_ = landmark_name_[index];
+        for (const auto &l:ll)
+        {
+            point_.x = l.pos_.x;
+            point_.y = l.pos_.y;
+            point_.z = l.pos_.z;
+            marker_.points.push_back(point_);
+            if (class_ == "Elevator"){
+                color_.r = 0.0;
+                color_.g = 0.0;
+                color_.b = 1.0;
+            }else if (class_ == "Door"){
+                color_.r = 0.90;
+                color_.g = 0.71;
+                color_.b = 0.13;
+            }else{
+                color_.r = 1.0;
+                color_.g = 0.0;
+                color_.b = 0.0;
+            }
+            color_.a = 1.0;
+            marker_.colors.push_back(color_);
         }
-        color_.a = 1.0;
-        marker_.colors.push_back(color_);
+        index++;
     }
     marker_.header.frame_id = "map";
     marker_.header.stamp = ros::Time::now();
