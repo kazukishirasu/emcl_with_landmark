@@ -14,18 +14,23 @@ void x_means::main(std::vector<std::vector<Landmark>>& data, std::vector<std::ve
 {
     for (size_t i = 0; i < data.size(); i++)
     {
-        if (i == 0)
+        if (!data[i].empty())
         {
-            cluster_n = 10;
-        }else if (i == 1)
-        {
-            cluster_n = 6;
-        }else
-        {
-            cluster_n = 2;
+            if (i == 0)
+            {
+                // cluster_n = 10;
+                cluster_n = 1;
+            }else if (i == 1)
+            {
+                // cluster_n = 6;
+                cluster_n = 5;
+            }else
+            {
+                cluster_n = 2;
+            }
+            k_means(data[i], result[i]);
+            ROS_INFO("====================");
         }
-        k_means(data[i], result[i]);
-        ROS_INFO("====================");
     }
 }
 
@@ -35,10 +40,9 @@ void x_means::k_means(std::vector<Landmark>& data, std::vector<Landmark>& result
     init(data, result);
     while (!finish)
     {
-        calc_centroid(data, result);
         allocate_id(data, result, finish);
+        calc_centroid(data, result);
     }
-    calc_centroid(data, result);
     for (const auto &r:result)
     {
         ROS_INFO("cluster ID: %d, centroid_x: %lf, centroid_y: %lf", r.clusterID_, r.pos_.x, r.pos_.y);
@@ -47,27 +51,90 @@ void x_means::k_means(std::vector<Landmark>& data, std::vector<Landmark>& result
 
 void x_means::init(std::vector<Landmark>& data, std::vector<Landmark>& result)
 {
-    struct Landmark lm;
-    for (auto &b:data)
+    for (auto &d:data)
     {
-        b.clusterID_ = random(0, cluster_n);
+        d.clusterID_ = random(0, cluster_n);
     }
-    std::vector<int> num;
-    while (num.size() < cluster_n)
+    result.clear();
+    select_centroid(data, result);
+}
+
+void x_means::select_centroid(std::vector<Landmark>& data, std::vector<Landmark>& result)
+{
+    //k-meansの初期化(重複しないようにサンプリング)
+    // std::vector<int> num;
+    // while (num.size() < cluster_n)
+    // {
+    //     num.push_back(random(0, data.size()));
+    //     std::sort(num.begin(), num.end());
+    //     num.erase(std::unique(num.begin(), num.end()), num.end());
+    // }
+    // for (const auto &n:num)
+    // {
+    //     result.push_back(data[n]);
+    // }
+
+    //k-means++の初期化(セントロイドが離れるようにサンプリング)
+    result.push_back(data[random(0, data.size())]);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    for (size_t i = 0; i < cluster_n - 1; i++)
     {
-        num.push_back(random(0, data.size()));
-        std::sort(num.begin(), num.end());
-        num.erase(std::unique(num.begin(), num.end()), num.end());
-    }
-    for (const auto &n:num)
-    {
-        lm = data[n];
-        result.push_back(lm);
+        std::vector<float> dist_list;
+        std::vector<float> prob_list;
+        float sum = 0;
+        for (const auto &d:data)
+        {
+            float min_dist = std::numeric_limits<float>::max();
+            for (const auto &r:result)
+            {
+                float dist = std::hypot(r.pos_.x - d.pos_.x, r.pos_.y - d.pos_.y);
+                if (dist < min_dist)
+                {
+                    min_dist = dist;
+                }
+            }
+            sum += min_dist;
+            dist_list.push_back(min_dist);
+        }
+        float sum_pow = std::pow(sum, 2.0);
+        float dist_pow = 0;
+        for (const auto &d:dist_list)
+        {
+            dist_pow = std::pow(d, 2.0);
+            prob_list.push_back(dist_pow / sum_pow);
+        }
+        std::discrete_distribution<std::size_t> dist(prob_list.begin(), prob_list.end());
+        result.push_back(data[dist(gen)]);
     }
 }
 
 void x_means::calc_bic()
 {
+}
+
+void x_means::allocate_id(std::vector<Landmark>& data, std::vector<Landmark>& result, bool& finish)
+{
+    finish = true;
+    for (auto &d:data)
+    {
+        float min_dist = std::numeric_limits<float>::max();
+        int old_ID = d.clusterID_;
+        for (const auto &r:result)
+        {
+            float dist = std::hypot(r.pos_.x - d.pos_.x, r.pos_.y - d.pos_.y);
+            if (dist < min_dist)
+            {
+                min_dist = dist;
+                d.clusterID_ = r.clusterID_;
+            }
+        }
+        if (old_ID != d.clusterID_)
+        {
+            finish = false;
+        }
+    }
+    result.clear();
 }
 
 void x_means::calc_centroid(std::vector<Landmark>& data, std::vector<Landmark>& result)
@@ -77,46 +144,20 @@ void x_means::calc_centroid(std::vector<Landmark>& data, std::vector<Landmark>& 
     {
         float sum_x = 0, sum_y = 0;
         int num = 0;
-        for (const auto &b:data)
+        for (const auto &d:data)
         {
-            if (b.clusterID_ == i)
+            if (d.clusterID_ == i)
             {
-                sum_x += b.pos_.x;
-                sum_y += b.pos_.y;
+                sum_x += d.pos_.x;
+                sum_y += d.pos_.y;
                 num++;
             }
         }
-        // ROS_INFO("cluster ID: %ld, centroid_x: %lf, centroid_y: %lf, num: %d", i, sum_x/num, sum_y/num, num);
-        // ROS_INFO("cluster ID: %ld, sum_x: %lf, sum_y: %lf, num: %d", i, sum_x, sum_y, num);
         lm.clusterID_ = i;
         lm.pos_.x = sum_x / num;
         lm.pos_.y = sum_y / num;
         result.push_back(lm);
     }
-}
-
-void x_means::allocate_id(std::vector<Landmark>& data, std::vector<Landmark>& result, bool& finish)
-{
-    finish = true;
-    for (auto &b:data)
-    {
-        float dist, min_dist = 1000000;
-        int old_ID = b.clusterID_;
-        for (const auto &a:result)
-        {
-            dist = std::hypot(a.pos_.x - b.pos_.x, a.pos_.y - b.pos_.y);
-            if (dist < min_dist)
-            {
-                min_dist = dist;
-                b.clusterID_ = a.clusterID_;
-            }
-        }
-        if (old_ID != b.clusterID_)
-        {
-            finish = false;
-        }
-    }
-    result.clear();
 }
 
 // int x_means::random()

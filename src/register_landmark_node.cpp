@@ -60,12 +60,6 @@ bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Emp
 
 void register_landmark::loop()
 {
-    for (size_t i = 0; const auto &d:data_)
-    {
-        ROS_INFO("size of data[%ld] : %ld", i, d.size());
-        i++;
-    }
-    ROS_INFO("--------------------");
     visualize_landmark(result_);
     // visualize_landmark(data_);
 }

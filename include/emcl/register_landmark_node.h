@@ -17,6 +17,7 @@
 #include <visualization_msgs/Marker.h>
 #include "emcl/landmark_struct.h"
 #include "emcl/x_means.h"
+// #include "emcl/gmm.h"
 
 namespace emcl {
 
