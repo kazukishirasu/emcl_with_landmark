@@ -75,9 +75,9 @@ void x_means::select_centroid(std::vector<Landmark>& data, std::vector<Landmark>
     // }
 
     //k-means++の初期化(セントロイドが離れるようにサンプリング)
-    result.push_back(data[random(0, data.size())]);
     static std::random_device rd;
     static std::mt19937 gen(rd());
+    result.push_back(data[random(0, data.size())]);
     for (size_t i = 0; i < cluster_n - 1; i++)
     {
         std::vector<float> dist_list;

@@ -4,7 +4,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include <visualization_msgs/Marker.h>
-#include "emcl/landmark_struct.h"
+#include "emcl/struct.h"
 
 class visualize_landmark_node
 {

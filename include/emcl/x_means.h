@@ -2,12 +2,11 @@
 #define X_MEANS_H_
 
 #include <ros/ros.h>
-#include <string>
 #include <random>
 #include <vector>
 #include <algorithm>
 #include <math.h>
-#include "emcl/landmark_struct.h"
+#include "emcl/struct.h"
 
 namespace emcl {
 

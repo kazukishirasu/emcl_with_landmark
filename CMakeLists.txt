@@ -51,6 +51,6 @@ target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel L
 target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
 target_link_libraries(emcl2_node Mcl ExpResetMcl2 Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp ${catkin_LIBRARIES})
-target_link_libraries(register_landmark_node yaml-cpp x_means ${catkin_LIBRARIES})
-# target_link_libraries(register_landmark_node yaml-cpp gmm ${catkin_LIBRARIES})
+# target_link_libraries(register_landmark_node yaml-cpp x_means ${catkin_LIBRARIES})
+target_link_libraries(register_landmark_node yaml-cpp gmm ${catkin_LIBRARIES})
 target_link_libraries(visualize_landmark_node yaml-cpp ${catkin_LIBRARIES})

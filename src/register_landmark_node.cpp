@@ -66,11 +66,12 @@ void register_landmark::loop()
 
 void register_landmark::init_list()
 {
-    std::vector<Landmark> landmark_list;
+    //ランドマークの数だけ要素を追加
+    std::vector<Landmark> list;
     for (size_t i = 0; i < landmark_name.size(); i++)
     {
-        data_.push_back(landmark_list);
-        result_.push_back(landmark_list);
+        data_.push_back(list);
+        result_.push_back(list);
     }
 }
 
@@ -99,7 +100,8 @@ void register_landmark::clustering(const ros::TimerEvent& e)
     }
     if (!empty)
     {
-        xm.main(data_, result_);
+        // xm.main(data_, result_);
+        gmm.main(data_, result_);
     }
 }
 
@@ -117,9 +119,9 @@ void register_landmark::read_yaml()
             auto itr = std::find(save_name_.begin(), save_name_.end(), lm_name);
             if (itr == save_name_.end())
             {
-                std::vector<Landmark> landmark_list;
+                std::vector<Landmark> list;
                 save_name_.push_back(lm_name);
-                data_.push_back(landmark_list);
+                data_.push_back(list);
             }
             YAML::Node config = landmark[lm_name];
             int index = std::distance(save_name_.begin(), itr);

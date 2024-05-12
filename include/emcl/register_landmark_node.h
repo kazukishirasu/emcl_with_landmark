@@ -15,9 +15,9 @@
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
 #include <std_srvs/Empty.h>
 #include <visualization_msgs/Marker.h>
-#include "emcl/landmark_struct.h"
-#include "emcl/x_means.h"
-// #include "emcl/gmm.h"
+#include "emcl/struct.h"
+// #include "emcl/x_means.h"
+#include "emcl/gmm.h"
 
 namespace emcl {
 
@@ -48,7 +48,8 @@ private:
     laser_geometry::LaserProjection projector_;
     tf::TransformListener listener_;
     sensor_msgs::PointCloud cloud_;
-    x_means xm;
+    // x_means xm;
+    GMM gmm;
     int w_img_ = 1280;
     std::vector<std::vector<Landmark>> data_{}, result_{};
     std::vector<std::string> save_name_{};
