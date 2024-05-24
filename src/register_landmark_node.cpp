@@ -13,7 +13,7 @@ register_landmark::register_landmark()
     save_srv_ = nh_.advertiseService("/save_landmark", &register_landmark::cb_save_srv, this);
     sphere_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_sphere", 1);
     text_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_text", 1);
-    clustering_timer = nh_.createTimer(ros::Duration(10), &register_landmark::clustering, this);
+    // clustering_timer = nh_.createTimer(ros::Duration(10), &register_landmark::clustering, this);
 }
 
 register_landmark::~register_landmark()
@@ -31,6 +31,7 @@ void register_landmark::cb_scan(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
 {
+    //時間同期あり
     if (std::abs(msg.header.stamp.toSec() - cloud_.header.stamp.toSec()) < 0.01)
     {
         struct Landmark lm;
@@ -42,9 +43,24 @@ void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
                 const int index = std::distance(landmark_name.begin(), itr);
                 get_pos(b.xmax, b.xmin, lm);
                 data_[index].push_back(lm);
+                ROS_INFO("scan time_stamp:%f, yolo time_stamp:%f, difference : %f", cloud_.header.stamp.toSec(), msg.header.stamp.toSec(), std::abs(cloud_.header.stamp.toSec() - msg.header.stamp.toSec()));
             }
         }
     }
+
+    //時間同期なし
+    // struct Landmark lm;
+    // for (const auto &b:msg.bounding_boxes)
+    // {
+    //     auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
+    //     if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+    //     {
+    //         const int index = std::distance(landmark_name.begin(), itr);
+    //         get_pos(b.xmax, b.xmin, lm);
+    //         data_[index].push_back(lm);
+    //         ROS_INFO("scan time_stamp:%f, yolo time_stamp:%f, difference : %f", cloud_.header.stamp.toSec(), msg.header.stamp.toSec(), std::abs(cloud_.header.stamp.toSec() - msg.header.stamp.toSec()));
+    //     }
+    // }
 }
 
 bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
@@ -60,8 +76,8 @@ bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Emp
 
 void register_landmark::loop()
 {
-    visualize_landmark(result_);
-    // visualize_landmark(data_);
+    // visualize_landmark(result_);
+    visualize_landmark(data_);
 }
 
 void register_landmark::init_list()

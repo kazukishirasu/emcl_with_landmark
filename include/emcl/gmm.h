@@ -3,7 +3,8 @@
 
 #include <ros/ros.h>
 #include <random>
-// #include <Eigen/Dense>
+#include <algorithm>
+#include <iterator>
 #include "emcl/struct.h"
 
 namespace emcl {
@@ -14,15 +15,13 @@ public:
     GMM();
     ~GMM();
     void main(std::vector<std::vector<Landmark>>&, std::vector<std::vector<Landmark>>&);
-    void init_list(std::vector<std::vector<Landmark>>&);
-    void clustering(std::vector<Landmark>&, std::vector<Landmark>&, std::vector<Distribution>&);
-    void initialization(std::vector<Landmark>&, std::vector<Distribution>&);
-    void init_mean(std::vector<Landmark>&, std::vector<Distribution>&);
-    void init_cov(std::vector<Landmark>&, std::vector<Distribution>&);
-    void allocate_id(std::vector<Landmark>&, std::vector<Distribution>&);
+    void clustering(std::vector<Landmark>&, std::vector<Landmark>&);
+    void initialization(std::vector<Landmark>&, std::vector<Landmark>&, Data_point&, Distribution&);
+    void init_mean(Data_point&, Distribution&);
+    // void init_cov(std::vector<Landmark>&, std::vector<Distribution>&);
+    // void allocate_id(std::vector<Landmark>&, std::vector<Distribution>&);
     int random(int, int);
 private:
-    std::vector<std::vector<Distribution>> distr_list;
     int cluster_n;
 };
 
