@@ -38,12 +38,12 @@ void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
         for (const auto &b:msg.bounding_boxes)
         {
             auto itr = std::find(landmark_name.begin(), landmark_name.end(), b.Class);
-            if (b.probability > 0.9 && itr != landmark_name.end() && !cloud_.points.empty())
+            if (b.probability > 0.8 && b.xmax - b.xmin > 30 && itr != landmark_name.end() && !cloud_.points.empty())
+            // if (b.probability > 0.8 && itr != landmark_name.end() && !cloud_.points.empty())
             {
                 const int index = std::distance(landmark_name.begin(), itr);
                 get_pos(b.xmax, b.xmin, lm);
                 data_[index].push_back(lm);
-                ROS_INFO("scan time_stamp:%f, yolo time_stamp:%f, difference : %f", cloud_.header.stamp.toSec(), msg.header.stamp.toSec(), std::abs(cloud_.header.stamp.toSec() - msg.header.stamp.toSec()));
             }
         }
     }
@@ -58,20 +58,26 @@ void register_landmark::cb_yolo(const yolov5_pytorch_ros::BoundingBoxes& msg)
     //         const int index = std::distance(landmark_name.begin(), itr);
     //         get_pos(b.xmax, b.xmin, lm);
     //         data_[index].push_back(lm);
-    //         ROS_INFO("scan time_stamp:%f, yolo time_stamp:%f, difference : %f", cloud_.header.stamp.toSec(), msg.header.stamp.toSec(), std::abs(cloud_.header.stamp.toSec() - msg.header.stamp.toSec()));
     //     }
     // }
 }
 
 bool register_landmark::cb_save_srv(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
-    if (write_yaml(result_))
+    if (write_yaml(data_))
     {
         ROS_INFO("Landmark saved successfully");
         return true;
     }else{
         return false;
     }
+    // if (write_yaml(result_))
+    // {
+    //     ROS_INFO("Landmark saved successfully");
+    //     return true;
+    // }else{
+    //     return false;
+    // }
 }
 
 void register_landmark::loop()

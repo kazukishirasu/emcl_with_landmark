@@ -1,0 +1,2084 @@
+landmark:
+  Door:
+    id0:
+      pose: [-11.03174, -5.119715, 0]
+      enable: true
+      option: ~
+    id1:
+      pose: [-11.1017, -5.183594, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-11.11545, -5.097181, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-11.1345, -4.787366, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-11.14432, -5.134392, 0]
+      enable: true
+      option: ~
+    id5:
+      pose: [-11.17744, -5.084181, 0]
+      enable: true
+      option: ~
+    id6:
+      pose: [-11.20592, -5.214632, 0]
+      enable: true
+      option: ~
+    id7:
+      pose: [-11.23895, -5.20625, 0]
+      enable: true
+      option: ~
+    id8:
+      pose: [-11.22177, -5.107252, 0]
+      enable: true
+      option: ~
+    id9:
+      pose: [-11.23445, -5.065493, 0]
+      enable: true
+      option: ~
+    id10:
+      pose: [-11.23306, -5.084827, 0]
+      enable: true
+      option: ~
+    id11:
+      pose: [0.8946044, 7.845745, 0]
+      enable: true
+      option: ~
+    id12:
+      pose: [0.9181552, 7.917696, 0]
+      enable: true
+      option: ~
+    id13:
+      pose: [0.8914717, 7.603409, 0]
+      enable: true
+      option: ~
+    id14:
+      pose: [0.8873398, 7.70919, 0]
+      enable: true
+      option: ~
+    id15:
+      pose: [0.9057409, 7.645027, 0]
+      enable: true
+      option: ~
+    id16:
+      pose: [0.8924682, 7.645438, 0]
+      enable: true
+      option: ~
+    id17:
+      pose: [0.9409915, 7.661685, 0]
+      enable: true
+      option: ~
+    id18:
+      pose: [0.9234297, 7.647048, 0]
+      enable: true
+      option: ~
+    id19:
+      pose: [0.921699, 7.731808, 0]
+      enable: true
+      option: ~
+    id20:
+      pose: [0.9163195, 7.730721, 0]
+      enable: true
+      option: ~
+    id21:
+      pose: [0.9090907, 7.749807, 0]
+      enable: true
+      option: ~
+    id22:
+      pose: [0.9166659, 7.763024, 0]
+      enable: true
+      option: ~
+    id23:
+      pose: [0.9248275, 7.771252, 0]
+      enable: true
+      option: ~
+    id24:
+      pose: [0.9050061, 7.86324, 0]
+      enable: true
+      option: ~
+    id25:
+      pose: [0.9089525, 7.89723, 0]
+      enable: true
+      option: ~
+    id26:
+      pose: [0.9174269, 7.933182, 0]
+      enable: true
+      option: ~
+    id27:
+      pose: [0.9050349, 7.954457, 0]
+      enable: true
+      option: ~
+    id28:
+      pose: [0.9011728, 7.957319, 0]
+      enable: true
+      option: ~
+    id29:
+      pose: [0.9172584, 7.998506, 0]
+      enable: true
+      option: ~
+    id30:
+      pose: [0.9273722, 8.01207, 0]
+      enable: true
+      option: ~
+    id31:
+      pose: [0.896749, 8.058442, 0]
+      enable: true
+      option: ~
+    id32:
+      pose: [0.8986082, 8.029274, 0]
+      enable: true
+      option: ~
+    id33:
+      pose: [0.9099234, 8.051367, 0]
+      enable: true
+      option: ~
+    id34:
+      pose: [0.9044056, 8.053963, 0]
+      enable: true
+      option: ~
+    id35:
+      pose: [0.9229446, 8.077602, 0]
+      enable: true
+      option: ~
+    id36:
+      pose: [0.9027859, 8.104478, 0]
+      enable: true
+      option: ~
+    id37:
+      pose: [0.921598, 8.11805, 0]
+      enable: true
+      option: ~
+    id38:
+      pose: [0.8957406, 8.189422, 0]
+      enable: true
+      option: ~
+    id39:
+      pose: [0.919001, 8.175491, 0]
+      enable: true
+      option: ~
+    id40:
+      pose: [0.9021766, 8.078897, 0]
+      enable: true
+      option: ~
+    id41:
+      pose: [0.898214, 8.089333, 0]
+      enable: true
+      option: ~
+    id42:
+      pose: [0.8992231, 8.068448, 0]
+      enable: true
+      option: ~
+    id43:
+      pose: [0.9127491, 8.110645, 0]
+      enable: true
+      option: ~
+    id44:
+      pose: [0.8933727, 8.126622, 0]
+      enable: true
+      option: ~
+    id45:
+      pose: [0.9042779, 8.019272, 0]
+      enable: true
+      option: ~
+    id46:
+      pose: [0.8927053, 7.984086, 0]
+      enable: true
+      option: ~
+    id47:
+      pose: [0.9215108, 8.009194, 0]
+      enable: true
+      option: ~
+    id48:
+      pose: [0.9135442, 7.974572, 0]
+      enable: true
+      option: ~
+    id49:
+      pose: [0.8882188, 7.985518, 0]
+      enable: true
+      option: ~
+    id50:
+      pose: [0.910183, 7.861146, 0]
+      enable: true
+      option: ~
+    id51:
+      pose: [0.928014, 13.81979, 0]
+      enable: true
+      option: ~
+    id52:
+      pose: [0.9328147, 13.82218, 0]
+      enable: true
+      option: ~
+    id53:
+      pose: [0.9340261, 13.85397, 0]
+      enable: true
+      option: ~
+    id54:
+      pose: [0.9425808, 13.86783, 0]
+      enable: true
+      option: ~
+    id55:
+      pose: [0.9255801, 13.81442, 0]
+      enable: true
+      option: ~
+    id56:
+      pose: [0.9158632, 13.79015, 0]
+      enable: true
+      option: ~
+    id57:
+      pose: [0.9210909, 13.76112, 0]
+      enable: true
+      option: ~
+    id58:
+      pose: [0.9171371, 13.86443, 0]
+      enable: true
+      option: ~
+    id59:
+      pose: [0.9484301, 16.54252, 0]
+      enable: true
+      option: ~
+    id60:
+      pose: [0.9317561, 13.81282, 0]
+      enable: true
+      option: ~
+    id61:
+      pose: [0.9540669, 16.27693, 0]
+      enable: true
+      option: ~
+    id62:
+      pose: [0.9522458, 13.8503, 0]
+      enable: true
+      option: ~
+    id63:
+      pose: [0.9630141, 16.34805, 0]
+      enable: true
+      option: ~
+    id64:
+      pose: [0.9301025, 13.90947, 0]
+      enable: true
+      option: ~
+    id65:
+      pose: [0.9525017, 16.39595, 0]
+      enable: true
+      option: ~
+    id66:
+      pose: [0.9209808, 13.90486, 0]
+      enable: true
+      option: ~
+    id67:
+      pose: [0.9685614, 16.36083, 0]
+      enable: true
+      option: ~
+    id68:
+      pose: [0.9084758, 13.90888, 0]
+      enable: true
+      option: ~
+    id69:
+      pose: [0.9629527, 16.34122, 0]
+      enable: true
+      option: ~
+    id70:
+      pose: [0.9385907, 16.26329, 0]
+      enable: true
+      option: ~
+    id71:
+      pose: [0.9240813, 13.9563, 0]
+      enable: true
+      option: ~
+    id72:
+      pose: [0.9329794, 14.00683, 0]
+      enable: true
+      option: ~
+    id73:
+      pose: [0.9570242, 16.3799, 0]
+      enable: true
+      option: ~
+    id74:
+      pose: [0.9263102, 14.00042, 0]
+      enable: true
+      option: ~
+    id75:
+      pose: [0.9283914, 16.16893, 0]
+      enable: true
+      option: ~
+    id76:
+      pose: [0.9255811, 16.38267, 0]
+      enable: true
+      option: ~
+    id77:
+      pose: [0.9303374, 14.07657, 0]
+      enable: true
+      option: ~
+    id78:
+      pose: [0.9409841, 16.31043, 0]
+      enable: true
+      option: ~
+    id79:
+      pose: [0.9274143, 14.1359, 0]
+      enable: true
+      option: ~
+    id80:
+      pose: [0.9357183, 16.36506, 0]
+      enable: true
+      option: ~
+    id81:
+      pose: [0.9293372, 14.13894, 0]
+      enable: true
+      option: ~
+    id82:
+      pose: [0.9337874, 16.23315, 0]
+      enable: true
+      option: ~
+    id83:
+      pose: [0.9289699, 14.18165, 0]
+      enable: true
+      option: ~
+    id84:
+      pose: [0.9382381, 16.18505, 0]
+      enable: true
+      option: ~
+    id85:
+      pose: [0.9190884, 14.1826, 0]
+      enable: true
+      option: ~
+    id86:
+      pose: [0.9234414, 16.11437, 0]
+      enable: true
+      option: ~
+    id87:
+      pose: [0.9286211, 14.11899, 0]
+      enable: true
+      option: ~
+    id88:
+      pose: [0.9519914, 16.1993, 0]
+      enable: true
+      option: ~
+    id89:
+      pose: [0.9098758, 14.20681, 0]
+      enable: true
+      option: ~
+    id90:
+      pose: [0.9578593, 16.18784, 0]
+      enable: true
+      option: ~
+    id91:
+      pose: [0.912194, 14.12425, 0]
+      enable: true
+      option: ~
+    id92:
+      pose: [0.9287932, 16.22256, 0]
+      enable: true
+      option: ~
+    id93:
+      pose: [0.926863, 14.15933, 0]
+      enable: true
+      option: ~
+    id94:
+      pose: [0.938679, 16.26731, 0]
+      enable: true
+      option: ~
+    id95:
+      pose: [0.9022669, 14.05895, 0]
+      enable: true
+      option: ~
+    id96:
+      pose: [0.9142911, 14.10701, 0]
+      enable: true
+      option: ~
+    id97:
+      pose: [0.9410144, 16.32848, 0]
+      enable: true
+      option: ~
+    id98:
+      pose: [0.9118538, 13.99743, 0]
+      enable: true
+      option: ~
+    id99:
+      pose: [0.9410948, 16.35053, 0]
+      enable: true
+      option: ~
+    id100:
+      pose: [0.9221955, 14.09918, 0]
+      enable: true
+      option: ~
+    id101:
+      pose: [0.9451665, 16.38711, 0]
+      enable: true
+      option: ~
+    id102:
+      pose: [0.9390343, 16.42329, 0]
+      enable: true
+      option: ~
+    id103:
+      pose: [0.9112552, 14.00692, 0]
+      enable: true
+      option: ~
+    id104:
+      pose: [0.935088, 16.4578, 0]
+      enable: true
+      option: ~
+    id105:
+      pose: [0.9084982, 14.05458, 0]
+      enable: true
+      option: ~
+    id106:
+      pose: [0.9383163, 13.89016, 0]
+      enable: true
+      option: ~
+    id107:
+      pose: [0.9521363, 16.483, 0]
+      enable: true
+      option: ~
+    id108:
+      pose: [0.9198257, 13.87952, 0]
+      enable: true
+      option: ~
+    id109:
+      pose: [0.9287946, 16.45006, 0]
+      enable: true
+      option: ~
+    id110:
+      pose: [0.9514009, 14.12238, 0]
+      enable: true
+      option: ~
+    id111:
+      pose: [0.9494869, 16.54573, 0]
+      enable: true
+      option: ~
+    id112:
+      pose: [0.9429748, 13.91461, 0]
+      enable: true
+      option: ~
+    id113:
+      pose: [0.9605135, 20.5946, 0]
+      enable: true
+      option: ~
+    id114:
+      pose: [0.9546115, 16.53896, 0]
+      enable: true
+      option: ~
+    id115:
+      pose: [0.9375399, 13.94613, 0]
+      enable: true
+      option: ~
+    id116:
+      pose: [0.9722474, 20.63807, 0]
+      enable: true
+      option: ~
+    id117:
+      pose: [0.9567335, 16.55374, 0]
+      enable: true
+      option: ~
+    id118:
+      pose: [0.9476505, 14.19127, 0]
+      enable: true
+      option: ~
+    id119:
+      pose: [0.9676341, 20.88473, 0]
+      enable: true
+      option: ~
+    id120:
+      pose: [0.9080778, 13.96925, 0]
+      enable: true
+      option: ~
+    id121:
+      pose: [1.000845, 20.62491, 0]
+      enable: true
+      option: ~
+    id122:
+      pose: [0.9879376, 20.53382, 0]
+      enable: true
+      option: ~
+    id123:
+      pose: [0.9179385, 13.55343, 0]
+      enable: true
+      option: ~
+    id124:
+      pose: [0.9599626, 16.48769, 0]
+      enable: true
+      option: ~
+    id125:
+      pose: [1.010197, 20.7847, 0]
+      enable: true
+      option: ~
+    id126:
+      pose: [0.934096, 16.60515, 0]
+      enable: true
+      option: ~
+    id127:
+      pose: [1.017964, 20.72522, 0]
+      enable: true
+      option: ~
+    id128:
+      pose: [0.9347478, 16.56356, 0]
+      enable: true
+      option: ~
+    id129:
+      pose: [1.041263, 20.55205, 0]
+      enable: true
+      option: ~
+    id130:
+      pose: [0.8845614, 16.25533, 0]
+      enable: true
+      option: ~
+    id131:
+      pose: [1.00093, 20.5402, 0]
+      enable: true
+      option: ~
+    id132:
+      pose: [0.9469534, 16.40828, 0]
+      enable: true
+      option: ~
+    id133:
+      pose: [1.042265, 20.51468, 0]
+      enable: true
+      option: ~
+    id134:
+      pose: [0.8668845, 16.46003, 0]
+      enable: true
+      option: ~
+    id135:
+      pose: [1.057809, 20.5379, 0]
+      enable: true
+      option: ~
+    id136:
+      pose: [0.8544344, 16.49096, 0]
+      enable: true
+      option: ~
+    id137:
+      pose: [0.8794324, 16.48065, 0]
+      enable: true
+      option: ~
+    id138:
+      pose: [1.033528, 20.49548, 0]
+      enable: true
+      option: ~
+    id139:
+      pose: [1.043612, 20.51877, 0]
+      enable: true
+      option: ~
+    id140:
+      pose: [1.046773, 20.51745, 0]
+      enable: true
+      option: ~
+    id141:
+      pose: [0.8189208, 16.30918, 0]
+      enable: true
+      option: ~
+    id142:
+      pose: [1.027642, 20.53457, 0]
+      enable: true
+      option: ~
+    id143:
+      pose: [1.028111, 20.54466, 0]
+      enable: true
+      option: ~
+    id144:
+      pose: [1.031497, 20.68652, 0]
+      enable: true
+      option: ~
+    id145:
+      pose: [1.024663, 20.70832, 0]
+      enable: true
+      option: ~
+    id146:
+      pose: [1.024356, 20.70909, 0]
+      enable: true
+      option: ~
+    id147:
+      pose: [1.040802, 20.7696, 0]
+      enable: true
+      option: ~
+    id148:
+      pose: [1.027725, 20.80764, 0]
+      enable: true
+      option: ~
+    id149:
+      pose: [1.018235, 20.8949, 0]
+      enable: true
+      option: ~
+    id150:
+      pose: [1.023151, 20.95696, 0]
+      enable: true
+      option: ~
+    id151:
+      pose: [1.020072, 20.87579, 0]
+      enable: true
+      option: ~
+    id152:
+      pose: [1.003529, 20.79495, 0]
+      enable: true
+      option: ~
+    id153:
+      pose: [1.000295, 20.77258, 0]
+      enable: true
+      option: ~
+    id154:
+      pose: [0.9804868, 20.98412, 0]
+      enable: true
+      option: ~
+    id155:
+      pose: [0.973184, 21.00433, 0]
+      enable: true
+      option: ~
+    id156:
+      pose: [0.9787663, 21.0241, 0]
+      enable: true
+      option: ~
+    id157:
+      pose: [0.9786152, 21.09892, 0]
+      enable: true
+      option: ~
+    id158:
+      pose: [1.018867, 21.20667, 0]
+      enable: true
+      option: ~
+    id159:
+      pose: [1.075267, 21.21248, 0]
+      enable: true
+      option: ~
+    id160:
+      pose: [1.063834, 21.157, 0]
+      enable: true
+      option: ~
+    id161:
+      pose: [1.085361, 21.18758, 0]
+      enable: true
+      option: ~
+    id162:
+      pose: [1.070652, 21.27049, 0]
+      enable: true
+      option: ~
+    id163:
+      pose: [1.23449, 27.20089, 0]
+      enable: true
+      option: ~
+    id164:
+      pose: [1.250093, 27.22281, 0]
+      enable: true
+      option: ~
+    id165:
+      pose: [1.058848, 21.23484, 0]
+      enable: true
+      option: ~
+    id166:
+      pose: [1.241159, 27.13685, 0]
+      enable: true
+      option: ~
+    id167:
+      pose: [1.070547, 21.15835, 0]
+      enable: true
+      option: ~
+    id168:
+      pose: [1.133211, 21.38835, 0]
+      enable: true
+      option: ~
+    id169:
+      pose: [1.198511, 27.30851, 0]
+      enable: true
+      option: ~
+    id170:
+      pose: [1.204519, 27.27863, 0]
+      enable: true
+      option: ~
+    id171:
+      pose: [1.122493, 21.33392, 0]
+      enable: true
+      option: ~
+    id172:
+      pose: [1.214208, 27.18016, 0]
+      enable: true
+      option: ~
+    id173:
+      pose: [1.114606, 21.19864, 0]
+      enable: true
+      option: ~
+    id174:
+      pose: [1.158115, 27.16773, 0]
+      enable: true
+      option: ~
+    id175:
+      pose: [1.193265, 21.21681, 0]
+      enable: true
+      option: ~
+    id176:
+      pose: [1.155855, 27.20984, 0]
+      enable: true
+      option: ~
+    id177:
+      pose: [1.191104, 21.29018, 0]
+      enable: true
+      option: ~
+    id178:
+      pose: [1.154982, 27.16304, 0]
+      enable: true
+      option: ~
+    id179:
+      pose: [1.193727, 21.40563, 0]
+      enable: true
+      option: ~
+    id180:
+      pose: [1.155834, 27.23475, 0]
+      enable: true
+      option: ~
+    id181:
+      pose: [1.160982, 21.67895, 0]
+      enable: true
+      option: ~
+    id182:
+      pose: [1.18185, 27.12873, 0]
+      enable: true
+      option: ~
+    id183:
+      pose: [1.167184, 21.33918, 0]
+      enable: true
+      option: ~
+    id184:
+      pose: [1.158948, 27.32012, 0]
+      enable: true
+      option: ~
+    id185:
+      pose: [1.138685, 27.24056, 0]
+      enable: true
+      option: ~
+    id186:
+      pose: [1.130784, 27.34377, 0]
+      enable: true
+      option: ~
+    id187:
+      pose: [1.123058, 27.28428, 0]
+      enable: true
+      option: ~
+    id188:
+      pose: [1.104391, 27.24815, 0]
+      enable: true
+      option: ~
+    id189:
+      pose: [1.11946, 27.30687, 0]
+      enable: true
+      option: ~
+    id190:
+      pose: [1.089234, 27.30002, 0]
+      enable: true
+      option: ~
+    id191:
+      pose: [1.0819, 27.26641, 0]
+      enable: true
+      option: ~
+    id192:
+      pose: [1.103846, 27.43865, 0]
+      enable: true
+      option: ~
+    id193:
+      pose: [1.100571, 27.26128, 0]
+      enable: true
+      option: ~
+    id194:
+      pose: [1.078258, 27.33651, 0]
+      enable: true
+      option: ~
+    id195:
+      pose: [1.084623, 27.28457, 0]
+      enable: true
+      option: ~
+    id196:
+      pose: [1.094029, 27.29616, 0]
+      enable: true
+      option: ~
+    id197:
+      pose: [1.084137, 27.15489, 0]
+      enable: true
+      option: ~
+    id198:
+      pose: [1.100057, 27.10329, 0]
+      enable: true
+      option: ~
+    id199:
+      pose: [1.084408, 27.4397, 0]
+      enable: true
+      option: ~
+    id200:
+      pose: [1.057816, 27.43887, 0]
+      enable: true
+      option: ~
+    id201:
+      pose: [1.06896, 27.50985, 0]
+      enable: true
+      option: ~
+    id202:
+      pose: [1.087058, 27.62674, 0]
+      enable: true
+      option: ~
+    id203:
+      pose: [1.07309, 27.61698, 0]
+      enable: true
+      option: ~
+    id204:
+      pose: [1.05436, 27.66846, 0]
+      enable: true
+      option: ~
+    id205:
+      pose: [1.067465, 27.78274, 0]
+      enable: true
+      option: ~
+    id206:
+      pose: [1.049023, 27.77802, 0]
+      enable: true
+      option: ~
+    id207:
+      pose: [1.045812, 27.78681, 0]
+      enable: true
+      option: ~
+    id208:
+      pose: [1.054465, 27.82872, 0]
+      enable: true
+      option: ~
+    id209:
+      pose: [1.020267, 31.76662, 0]
+      enable: true
+      option: ~
+    id210:
+      pose: [1.054185, 27.80124, 0]
+      enable: true
+      option: ~
+    id211:
+      pose: [1.055538, 31.84879, 0]
+      enable: true
+      option: ~
+    id212:
+      pose: [1.046161, 27.76458, 0]
+      enable: true
+      option: ~
+    id213:
+      pose: [1.061948, 31.75296, 0]
+      enable: true
+      option: ~
+    id214:
+      pose: [1.042266, 27.83276, 0]
+      enable: true
+      option: ~
+    id215:
+      pose: [1.086345, 31.9335, 0]
+      enable: true
+      option: ~
+    id216:
+      pose: [1.029994, 27.90362, 0]
+      enable: true
+      option: ~
+    id217:
+      pose: [1.091028, 32.20706, 0]
+      enable: true
+      option: ~
+    id218:
+      pose: [1.020409, 27.85833, 0]
+      enable: true
+      option: ~
+    id219:
+      pose: [1.105507, 32.07962, 0]
+      enable: true
+      option: ~
+    id220:
+      pose: [1.157221, 32.42337, 0]
+      enable: true
+      option: ~
+    id221:
+      pose: [1.010056, 27.94136, 0]
+      enable: true
+      option: ~
+    id222:
+      pose: [1.115627, 32.05499, 0]
+      enable: true
+      option: ~
+    id223:
+      pose: [1.007374, 27.81827, 0]
+      enable: true
+      option: ~
+    id224:
+      pose: [0.9856672, 27.98085, 0]
+      enable: true
+      option: ~
+    id225:
+      pose: [1.145175, 32.06148, 0]
+      enable: true
+      option: ~
+    id226:
+      pose: [1.112982, 32.26711, 0]
+      enable: true
+      option: ~
+    id227:
+      pose: [1.01138, 28.08043, 0]
+      enable: true
+      option: ~
+    id228:
+      pose: [1.035397, 27.77526, 0]
+      enable: true
+      option: ~
+    id229:
+      pose: [1.065447, 31.89661, 0]
+      enable: true
+      option: ~
+    id230:
+      pose: [1.050504, 27.84443, 0]
+      enable: true
+      option: ~
+    id231:
+      pose: [1.040694, 31.82065, 0]
+      enable: true
+      option: ~
+    id232:
+      pose: [1.049104, 31.856, 0]
+      enable: true
+      option: ~
+    id233:
+      pose: [1.066706, 27.89341, 0]
+      enable: true
+      option: ~
+    id234:
+      pose: [1.044207, 31.85861, 0]
+      enable: true
+      option: ~
+    id235:
+      pose: [1.090387, 27.80202, 0]
+      enable: true
+      option: ~
+    id236:
+      pose: [1.042295, 31.8829, 0]
+      enable: true
+      option: ~
+    id237:
+      pose: [1.091979, 27.7873, 0]
+      enable: true
+      option: ~
+    id238:
+      pose: [1.019895, 31.89617, 0]
+      enable: true
+      option: ~
+    id239:
+      pose: [1.140941, 27.77388, 0]
+      enable: true
+      option: ~
+    id240:
+      pose: [1.132002, 27.74666, 0]
+      enable: true
+      option: ~
+    id241:
+      pose: [1.026831, 31.80951, 0]
+      enable: true
+      option: ~
+    id242:
+      pose: [1.019998, 31.70655, 0]
+      enable: true
+      option: ~
+    id243:
+      pose: [1.063953, 27.81153, 0]
+      enable: true
+      option: ~
+    id244:
+      pose: [1.02264, 31.72373, 0]
+      enable: true
+      option: ~
+    id245:
+      pose: [1.057253, 27.9065, 0]
+      enable: true
+      option: ~
+    id246:
+      pose: [1.027131, 31.6699, 0]
+      enable: true
+      option: ~
+    id247:
+      pose: [1.055154, 27.8983, 0]
+      enable: true
+      option: ~
+    id248:
+      pose: [1.033041, 31.65456, 0]
+      enable: true
+      option: ~
+    id249:
+      pose: [1.058255, 27.81719, 0]
+      enable: true
+      option: ~
+    id250:
+      pose: [1.04097, 31.64896, 0]
+      enable: true
+      option: ~
+    id251:
+      pose: [1.078318, 27.79563, 0]
+      enable: true
+      option: ~
+    id252:
+      pose: [1.045775, 31.36825, 0]
+      enable: true
+      option: ~
+    id253:
+      pose: [-10.98355, 31.74997, 0]
+      enable: true
+      option: ~
+    id254:
+      pose: [-11.01116, 31.67537, 0]
+      enable: true
+      option: ~
+    id255:
+      pose: [-11.00682, 31.96215, 0]
+      enable: true
+      option: ~
+    id256:
+      pose: [-11.01893, 32.03997, 0]
+      enable: true
+      option: ~
+    id257:
+      pose: [-10.99434, 32.04903, 0]
+      enable: true
+      option: ~
+    id258:
+      pose: [-11.02035, 31.96031, 0]
+      enable: true
+      option: ~
+    id259:
+      pose: [-10.99137, 32.10223, 0]
+      enable: true
+      option: ~
+    id260:
+      pose: [-10.99404, 32.02676, 0]
+      enable: true
+      option: ~
+    id261:
+      pose: [-10.9956, 31.98582, 0]
+      enable: true
+      option: ~
+    id262:
+      pose: [-11.02205, 31.9694, 0]
+      enable: true
+      option: ~
+    id263:
+      pose: [-10.99801, 31.86242, 0]
+      enable: true
+      option: ~
+    id264:
+      pose: [-10.97558, 31.87611, 0]
+      enable: true
+      option: ~
+    id265:
+      pose: [-11.00107, 31.81419, 0]
+      enable: true
+      option: ~
+    id266:
+      pose: [-10.93621, 31.50673, 0]
+      enable: true
+      option: ~
+    id267:
+      pose: [-10.97146, 31.65133, 0]
+      enable: true
+      option: ~
+    id268:
+      pose: [-10.95536, 31.43451, 0]
+      enable: true
+      option: ~
+    id269:
+      pose: [-10.96391, 31.58663, 0]
+      enable: true
+      option: ~
+    id270:
+      pose: [-11.01825, 31.49254, 0]
+      enable: true
+      option: ~
+    id271:
+      pose: [-11.17805, 13.02847, 0]
+      enable: true
+      option: ~
+    id272:
+      pose: [-11.15768, 13.07735, 0]
+      enable: true
+      option: ~
+    id273:
+      pose: [-11.13853, 13.15333, 0]
+      enable: true
+      option: ~
+    id274:
+      pose: [-11.14383, 13.06359, 0]
+      enable: true
+      option: ~
+    id275:
+      pose: [-11.14184, 13.07795, 0]
+      enable: true
+      option: ~
+    id276:
+      pose: [-11.15221, 13.1264, 0]
+      enable: true
+      option: ~
+    id277:
+      pose: [-11.13858, 13.1261, 0]
+      enable: true
+      option: ~
+    id278:
+      pose: [-11.13557, 13.09413, 0]
+      enable: true
+      option: ~
+    id279:
+      pose: [-11.13993, 13.06365, 0]
+      enable: true
+      option: ~
+    id280:
+      pose: [-11.13121, 13.12666, 0]
+      enable: true
+      option: ~
+    id281:
+      pose: [-11.12193, 13.17861, 0]
+      enable: true
+      option: ~
+    id282:
+      pose: [-11.13681, 13.15036, 0]
+      enable: true
+      option: ~
+    id283:
+      pose: [-11.12198, 13.17455, 0]
+      enable: true
+      option: ~
+    id284:
+      pose: [-11.12992, 13.15536, 0]
+      enable: true
+      option: ~
+    id285:
+      pose: [-11.12441, 13.22288, 0]
+      enable: true
+      option: ~
+    id286:
+      pose: [-11.11132, 13.20598, 0]
+      enable: true
+      option: ~
+    id287:
+      pose: [-11.12123, 13.19586, 0]
+      enable: true
+      option: ~
+    id288:
+      pose: [-11.10991, 13.18969, 0]
+      enable: true
+      option: ~
+    id289:
+      pose: [-11.1227, 13.16245, 0]
+      enable: true
+      option: ~
+    id290:
+      pose: [-11.13468, 10.62652, 0]
+      enable: true
+      option: ~
+    id291:
+      pose: [-11.12067, 13.05821, 0]
+      enable: true
+      option: ~
+    id292:
+      pose: [-11.15178, 10.5458, 0]
+      enable: true
+      option: ~
+    id293:
+      pose: [-11.12775, 13.05627, 0]
+      enable: true
+      option: ~
+    id294:
+      pose: [-11.16251, 10.56838, 0]
+      enable: true
+      option: ~
+    id295:
+      pose: [-11.10891, 12.85482, 0]
+      enable: true
+      option: ~
+    id296:
+      pose: [-11.15043, 10.57907, 0]
+      enable: true
+      option: ~
+    id297:
+      pose: [-11.14037, 10.62602, 0]
+      enable: true
+      option: ~
+    id298:
+      pose: [-11.11582, 12.78383, 0]
+      enable: true
+      option: ~
+    id299:
+      pose: [-11.16791, 10.67478, 0]
+      enable: true
+      option: ~
+    id300:
+      pose: [-11.10057, 12.81675, 0]
+      enable: true
+      option: ~
+    id301:
+      pose: [-11.0972, 12.69206, 0]
+      enable: true
+      option: ~
+    id302:
+      pose: [-11.1448, 10.62471, 0]
+      enable: true
+      option: ~
+    id303:
+      pose: [-11.14484, 10.641, 0]
+      enable: true
+      option: ~
+    id304:
+      pose: [-11.1175, 12.72851, 0]
+      enable: true
+      option: ~
+    id305:
+      pose: [-11.12521, 10.60728, 0]
+      enable: true
+      option: ~
+    id306:
+      pose: [-11.12228, 12.68294, 0]
+      enable: true
+      option: ~
+    id307:
+      pose: [-11.13027, 10.62534, 0]
+      enable: true
+      option: ~
+    id308:
+      pose: [-11.12242, 12.70222, 0]
+      enable: true
+      option: ~
+    id309:
+      pose: [-11.13562, 10.6087, 0]
+      enable: true
+      option: ~
+    id310:
+      pose: [-11.11783, 12.71664, 0]
+      enable: true
+      option: ~
+    id311:
+      pose: [-11.10502, 12.75212, 0]
+      enable: true
+      option: ~
+    id312:
+      pose: [-11.13499, 10.65346, 0]
+      enable: true
+      option: ~
+    id313:
+      pose: [-11.13852, 10.66394, 0]
+      enable: true
+      option: ~
+    id314:
+      pose: [-11.1116, 12.74586, 0]
+      enable: true
+      option: ~
+    id315:
+      pose: [-11.12577, 10.57954, 0]
+      enable: true
+      option: ~
+    id316:
+      pose: [-11.09689, 12.64135, 0]
+      enable: true
+      option: ~
+    id317:
+      pose: [-11.15242, 10.56222, 0]
+      enable: true
+      option: ~
+    id318:
+      pose: [-11.10831, 12.68528, 0]
+      enable: true
+      option: ~
+    id319:
+      pose: [-11.1376, 10.55786, 0]
+      enable: true
+      option: ~
+    id320:
+      pose: [-11.10925, 12.70361, 0]
+      enable: true
+      option: ~
+    id321:
+      pose: [-11.10082, 12.76906, 0]
+      enable: true
+      option: ~
+    id322:
+      pose: [-11.12229, 10.5306, 0]
+      enable: true
+      option: ~
+    id323:
+      pose: [-11.07758, 12.72157, 0]
+      enable: true
+      option: ~
+    id324:
+      pose: [-11.1423, 10.507, 0]
+      enable: true
+      option: ~
+    id325:
+      pose: [-11.08648, 12.81066, 0]
+      enable: true
+      option: ~
+    id326:
+      pose: [-11.14704, 10.43994, 0]
+      enable: true
+      option: ~
+    id327:
+      pose: [-11.0715, 12.78261, 0]
+      enable: true
+      option: ~
+    id328:
+      pose: [-11.14523, 10.43828, 0]
+      enable: true
+      option: ~
+    id329:
+      pose: [-11.06392, 12.82129, 0]
+      enable: true
+      option: ~
+    id330:
+      pose: [-11.14691, 10.41663, 0]
+      enable: true
+      option: ~
+    id331:
+      pose: [-11.04755, 12.74141, 0]
+      enable: true
+      option: ~
+    id332:
+      pose: [-11.14904, 10.40301, 0]
+      enable: true
+      option: ~
+    id333:
+      pose: [-11.05626, 12.78691, 0]
+      enable: true
+      option: ~
+    id334:
+      pose: [-11.06135, 12.8199, 0]
+      enable: true
+      option: ~
+    id335:
+      pose: [-11.09026, 12.77506, 0]
+      enable: true
+      option: ~
+    id336:
+      pose: [-11.13361, 10.09671, 0]
+      enable: true
+      option: ~
+    id337:
+      pose: [-11.16522, 10.05476, 0]
+      enable: true
+      option: ~
+    id338:
+      pose: [-11.15757, 10.08691, 0]
+      enable: true
+      option: ~
+    id339:
+      pose: [-11.16104, 10.03565, 0]
+      enable: true
+      option: ~
+    id340:
+      pose: [-11.23821, 10.27449, 0]
+      enable: true
+      option: ~
+    id341:
+      pose: [-11.17607, 10.09121, 0]
+      enable: true
+      option: ~
+    id342:
+      pose: [-11.16701, 10.19502, 0]
+      enable: true
+      option: ~
+    id343:
+      pose: [-11.16071, 10.16663, 0]
+      enable: true
+      option: ~
+    id344:
+      pose: [-11.16719, 10.09319, 0]
+      enable: true
+      option: ~
+    id345:
+      pose: [-11.16156, 9.943875, 0]
+      enable: true
+      option: ~
+    id346:
+      pose: [-11.10698, 10.10232, 0]
+      enable: true
+      option: ~
+    id347:
+      pose: [-11.11595, 10.11868, 0]
+      enable: true
+      option: ~
+    id348:
+      pose: [-11.2313, -4.310219, 0]
+      enable: true
+      option: ~
+    id349:
+      pose: [-11.25259, -4.315627, 0]
+      enable: true
+      option: ~
+    id350:
+      pose: [-11.25552, -4.292788, 0]
+      enable: true
+      option: ~
+    id351:
+      pose: [-11.25257, -4.284659, 0]
+      enable: true
+      option: ~
+    id352:
+      pose: [-11.2748, -4.244682, 0]
+      enable: true
+      option: ~
+    id353:
+      pose: [-11.22156, -4.281387, 0]
+      enable: true
+      option: ~
+    id354:
+      pose: [-11.24916, -4.402778, 0]
+      enable: true
+      option: ~
+    id355:
+      pose: [-11.27945, -4.622367, 0]
+      enable: true
+      option: ~
+    id356:
+      pose: [-11.27278, -4.463386, 0]
+      enable: true
+      option: ~
+    id357:
+      pose: [-11.27993, -4.495124, 0]
+      enable: true
+      option: ~
+    id358:
+      pose: [-11.27979, -4.460931, 0]
+      enable: true
+      option: ~
+    id359:
+      pose: [-11.28347, -4.433655, 0]
+      enable: true
+      option: ~
+    id360:
+      pose: [-11.26332, -4.53116, 0]
+      enable: true
+      option: ~
+    id361:
+      pose: [-11.2958, -4.606706, 0]
+      enable: true
+      option: ~
+    id362:
+      pose: [-11.27784, -4.560848, 0]
+      enable: true
+      option: ~
+    id363:
+      pose: [-11.30968, -4.52778, 0]
+      enable: true
+      option: ~
+    id364:
+      pose: [-11.31115, -4.570854, 0]
+      enable: true
+      option: ~
+    id365:
+      pose: [-11.31983, -4.738885, 0]
+      enable: true
+      option: ~
+    id366:
+      pose: [-11.27886, -4.784469, 0]
+      enable: true
+      option: ~
+    id367:
+      pose: [-11.2977, -4.797584, 0]
+      enable: true
+      option: ~
+    id368:
+      pose: [-11.28907, -4.92063, 0]
+      enable: true
+      option: ~
+    id369:
+      pose: [-11.27258, -4.80752, 0]
+      enable: true
+      option: ~
+    id370:
+      pose: [-11.25034, -4.816121, 0]
+      enable: true
+      option: ~
+    id371:
+      pose: [-11.27953, -4.879855, 0]
+      enable: true
+      option: ~
+    id372:
+      pose: [-11.26816, -4.846148, 0]
+      enable: true
+      option: ~
+    id373:
+      pose: [-11.28112, -4.902062, 0]
+      enable: true
+      option: ~
+    id374:
+      pose: [-11.30093, -4.968558, 0]
+      enable: true
+      option: ~
+    id375:
+      pose: [-11.28386, -4.976833, 0]
+      enable: true
+      option: ~
+  Elevator:
+    id0:
+      pose: [-7.384624, -7.464294, 0]
+      enable: true
+      option: ~
+    id1:
+      pose: [-4.973102, -7.385413, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [-6.695683, -1.600624, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [-3.584459, -1.502373, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [-2.689957, -7.316912, 0]
+      enable: true
+      option: ~
+    id5:
+      pose: [-7.317108, -7.33251, 0]
+      enable: true
+      option: ~
+    id6:
+      pose: [-4.968787, -7.358643, 0]
+      enable: true
+      option: ~
+    id7:
+      pose: [-6.801279, -1.487663, 0]
+      enable: true
+      option: ~
+    id8:
+      pose: [-3.640583, -1.57826, 0]
+      enable: true
+      option: ~
+    id9:
+      pose: [-2.668857, -7.468413, 0]
+      enable: true
+      option: ~
+    id10:
+      pose: [-7.440675, -7.379711, 0]
+      enable: true
+      option: ~
+    id11:
+      pose: [-6.886847, -1.526722, 0]
+      enable: true
+      option: ~
+    id12:
+      pose: [-3.715944, -1.550214, 0]
+      enable: true
+      option: ~
+    id13:
+      pose: [-5.07574, -7.370384, 0]
+      enable: true
+      option: ~
+    id14:
+      pose: [-2.815637, -7.406404, 0]
+      enable: true
+      option: ~
+    id15:
+      pose: [-6.785586, -1.531326, 0]
+      enable: true
+      option: ~
+    id16:
+      pose: [-5.182062, -7.367762, 0]
+      enable: true
+      option: ~
+    id17:
+      pose: [-7.628964, -7.375047, 0]
+      enable: true
+      option: ~
+    id18:
+      pose: [-3.627486, -1.554197, 0]
+      enable: true
+      option: ~
+    id19:
+      pose: [-2.909002, -7.386723, 0]
+      enable: true
+      option: ~
+    id20:
+      pose: [-7.02303, -1.616797, 0]
+      enable: true
+      option: ~
+    id21:
+      pose: [-5.079003, -7.379232, 0]
+      enable: true
+      option: ~
+    id22:
+      pose: [-7.417446, -7.39353, 0]
+      enable: true
+      option: ~
+    id23:
+      pose: [-3.836411, -1.541174, 0]
+      enable: true
+      option: ~
+    id24:
+      pose: [-2.826378, -7.37675, 0]
+      enable: true
+      option: ~
+    id25:
+      pose: [-5.133486, -7.375548, 0]
+      enable: true
+      option: ~
+    id26:
+      pose: [-7.522273, -7.398404, 0]
+      enable: true
+      option: ~
+    id27:
+      pose: [-7.00396, -1.584409, 0]
+      enable: true
+      option: ~
+    id28:
+      pose: [-2.878582, -7.394352, 0]
+      enable: true
+      option: ~
+    id29:
+      pose: [-3.822121, -1.537068, 0]
+      enable: true
+      option: ~
+    id30:
+      pose: [-7.50071, -7.393486, 0]
+      enable: true
+      option: ~
+    id31:
+      pose: [-2.880568, -7.386847, 0]
+      enable: true
+      option: ~
+    id32:
+      pose: [-7.063014, -1.741181, 0]
+      enable: true
+      option: ~
+    id33:
+      pose: [-5.135874, -7.368244, 0]
+      enable: true
+      option: ~
+    id34:
+      pose: [-3.944669, -1.549607, 0]
+      enable: true
+      option: ~
+    id35:
+      pose: [-7.505964, -7.421992, 0]
+      enable: true
+      option: ~
+    id36:
+      pose: [-5.172165, -7.356997, 0]
+      enable: true
+      option: ~
+    id37:
+      pose: [-7.069587, -1.789349, 0]
+      enable: true
+      option: ~
+    id38:
+      pose: [-2.907554, -7.369225, 0]
+      enable: true
+      option: ~
+    id39:
+      pose: [-3.982449, -1.530568, 0]
+      enable: true
+      option: ~
+    id40:
+      pose: [-7.067468, -1.765676, 0]
+      enable: true
+      option: ~
+    id41:
+      pose: [-2.925325, -7.382629, 0]
+      enable: true
+      option: ~
+    id42:
+      pose: [-5.168456, -7.371751, 0]
+      enable: true
+      option: ~
+    id43:
+      pose: [-7.517323, -7.397982, 0]
+      enable: true
+      option: ~
+    id44:
+      pose: [-3.939169, -1.552354, 0]
+      enable: true
+      option: ~
+    id45:
+      pose: [-7.051287, -1.833072, 0]
+      enable: true
+      option: ~
+    id46:
+      pose: [-5.233888, -7.367571, 0]
+      enable: true
+      option: ~
+    id47:
+      pose: [-7.587966, -7.362279, 0]
+      enable: true
+      option: ~
+    id48:
+      pose: [-2.983623, -7.420682, 0]
+      enable: true
+      option: ~
+    id49:
+      pose: [-4.011145, -1.542109, 0]
+      enable: true
+      option: ~
+    id50:
+      pose: [-2.947748, -7.383652, 0]
+      enable: true
+      option: ~
+    id51:
+      pose: [-7.091178, -1.942222, 0]
+      enable: true
+      option: ~
+    id52:
+      pose: [-5.222832, -7.390728, 0]
+      enable: true
+      option: ~
+    id53:
+      pose: [-4.096031, -1.555999, 0]
+      enable: true
+      option: ~
+    id54:
+      pose: [-5.32111, -7.372646, 0]
+      enable: true
+      option: ~
+    id55:
+      pose: [-3.021689, -7.387542, 0]
+      enable: true
+      option: ~
+    id56:
+      pose: [-7.102539, -1.947631, 0]
+      enable: true
+      option: ~
+    id57:
+      pose: [-4.144475, -1.539434, 0]
+      enable: true
+      option: ~
+    id58:
+      pose: [-2.995721, -7.38378, 0]
+      enable: true
+      option: ~
+    id59:
+      pose: [-5.331278, -7.374984, 0]
+      enable: true
+      option: ~
+    id60:
+      pose: [-4.329086, -1.535317, 0]
+      enable: true
+      option: ~
+    id61:
+      pose: [-7.087726, -2.013998, 0]
+      enable: true
+      option: ~
+    id62:
+      pose: [-4.435935, -1.511912, 0]
+      enable: true
+      option: ~
+    id63:
+      pose: [-3.332215, -7.358727, 0]
+      enable: true
+      option: ~
+    id64:
+      pose: [-5.627453, -7.333935, 0]
+      enable: true
+      option: ~
+    id65:
+      pose: [-3.371715, -7.396676, 0]
+      enable: true
+      option: ~
+    id66:
+      pose: [-5.579922, -7.395261, 0]
+      enable: true
+      option: ~
+    id67:
+      pose: [-4.50848, -1.54235, 0]
+      enable: true
+      option: ~
+    id68:
+      pose: [-4.675297, -1.604895, 0]
+      enable: true
+      option: ~
+    id69:
+      pose: [-3.523523, -7.374233, 0]
+      enable: true
+      option: ~
+    id70:
+      pose: [-4.671454, -1.766702, 0]
+      enable: true
+      option: ~
+    id71:
+      pose: [-4.659214, -1.789434, 0]
+      enable: true
+      option: ~
+    id72:
+      pose: [-4.711197, -1.797429, 0]
+      enable: true
+      option: ~
+    id73:
+      pose: [-4.543571, -2.087616, 0]
+      enable: true
+      option: ~
+    id74:
+      pose: [-4.383167, 21.75857, 0]
+      enable: true
+      option: ~
+    id75:
+      pose: [-4.389784, 21.69792, 0]
+      enable: true
+      option: ~
+    id76:
+      pose: [-4.413984, 21.76768, 0]
+      enable: true
+      option: ~
+    id77:
+      pose: [-4.383828, 21.69882, 0]
+      enable: true
+      option: ~
+    id78:
+      pose: [-4.388506, 21.58032, 0]
+      enable: true
+      option: ~
+    id79:
+      pose: [-4.420405, 21.60004, 0]
+      enable: true
+      option: ~
+    id80:
+      pose: [-4.41253, 21.49596, 0]
+      enable: true
+      option: ~
+    id81:
+      pose: [-4.372908, 21.39364, 0]
+      enable: true
+      option: ~
+    id82:
+      pose: [-4.423391, 21.47556, 0]
+      enable: true
+      option: ~
+    id83:
+      pose: [-4.440145, 21.69772, 0]
+      enable: true
+      option: ~
+    id84:
+      pose: [-4.434997, 21.64665, 0]
+      enable: true
+      option: ~
+    id85:
+      pose: [-4.460406, 21.77557, 0]
+      enable: true
+      option: ~
+    id86:
+      pose: [-4.45584, 21.68671, 0]
+      enable: true
+      option: ~
+    id87:
+      pose: [-4.445085, 21.76027, 0]
+      enable: true
+      option: ~
+    id88:
+      pose: [-4.426627, 21.71339, 0]
+      enable: true
+      option: ~
+    id89:
+      pose: [-4.388126, 21.67643, 0]
+      enable: true
+      option: ~
+    id90:
+      pose: [-4.33976, 21.61773, 0]
+      enable: true
+      option: ~
+    id91:
+      pose: [-4.383699, 21.6781, 0]
+      enable: true
+      option: ~
+    id92:
+      pose: [-4.35695, 21.70262, 0]
+      enable: true
+      option: ~
+    id93:
+      pose: [-4.379137, 21.7243, 0]
+      enable: true
+      option: ~
+    id94:
+      pose: [-4.343683, 21.70261, 0]
+      enable: true
+      option: ~
+    id95:
+      pose: [-4.359732, 21.72747, 0]
+      enable: true
+      option: ~
+    id96:
+      pose: [-4.291832, 21.38849, 0]
+      enable: true
+      option: ~
+    id97:
+      pose: [-6.498538, -1.310606, 0]
+      enable: true
+      option: ~
+    id98:
+      pose: [-6.310597, -1.224349, 0]
+      enable: true
+      option: ~
+    id99:
+      pose: [-6.11513, -1.279828, 0]
+      enable: true
+      option: ~
+    id100:
+      pose: [-6.325272, -1.325181, 0]
+      enable: true
+      option: ~
+    id101:
+      pose: [-6.424059, -1.409323, 0]
+      enable: true
+      option: ~
+    id102:
+      pose: [-7.066677, -6.913056, 0]
+      enable: true
+      option: ~
+    id103:
+      pose: [-4.855038, -7.119422, 0]
+      enable: true
+      option: ~
+    id104:
+      pose: [-6.482315, -1.400011, 0]
+      enable: true
+      option: ~
+    id105:
+      pose: [-7.023641, -6.970353, 0]
+      enable: true
+      option: ~
+    id106:
+      pose: [-7.015108, -7.04526, 0]
+      enable: true
+      option: ~
+    id107:
+      pose: [-6.407702, -1.401152, 0]
+      enable: true
+      option: ~
+    id108:
+      pose: [-4.840529, -6.969234, 0]
+      enable: true
+      option: ~
+    id109:
+      pose: [-7.00407, -6.92882, 0]
+      enable: true
+      option: ~
+    id110:
+      pose: [-6.549804, -1.389646, 0]
+      enable: true
+      option: ~
+    id111:
+      pose: [-6.42136, -1.378045, 0]
+      enable: true
+      option: ~
+    id112:
+      pose: [-7.207555, -7.229581, 0]
+      enable: true
+      option: ~
+    id113:
+      pose: [-4.896831, -7.227829, 0]
+      enable: true
+      option: ~
+    id114:
+      pose: [-7.239011, -7.213742, 0]
+      enable: true
+      option: ~
+    id115:
+      pose: [-4.924631, -7.250558, 0]
+      enable: true
+      option: ~
+    id116:
+      pose: [-6.410987, -1.383135, 0]
+      enable: true
+      option: ~
+    id117:
+      pose: [-7.323802, -7.226978, 0]
+      enable: true
+      option: ~
+    id118:
+      pose: [-4.926891, -7.23712, 0]
+      enable: true
+      option: ~
+    id119:
+      pose: [-6.469136, -1.380803, 0]
+      enable: true
+      option: ~
+    id120:
+      pose: [-4.90521, -7.227176, 0]
+      enable: true
+      option: ~
+    id121:
+      pose: [-7.327793, -7.235404, 0]
+      enable: true
+      option: ~
+    id122:
+      pose: [-6.33919, -1.382591, 0]
+      enable: true
+      option: ~
+    id123:
+      pose: [-6.480677, -1.389999, 0]
+      enable: true
+      option: ~
+    id124:
+      pose: [-5.01204, -7.231045, 0]
+      enable: true
+      option: ~
+    id125:
+      pose: [-7.393661, -7.245368, 0]
+      enable: true
+      option: ~
+    id126:
+      pose: [-3.364978, -1.498736, 0]
+      enable: true
+      option: ~
+    id127:
+      pose: [-7.445029, -7.225436, 0]
+      enable: true
+      option: ~
+    id128:
+      pose: [-5.122931, -7.215124, 0]
+      enable: true
+      option: ~
+    id129:
+      pose: [-6.474915, -1.402603, 0]
+      enable: true
+      option: ~
+    id130:
+      pose: [-3.463975, -1.379606, 0]
+      enable: true
+      option: ~
+    id131:
+      pose: [-7.500343, -7.248186, 0]
+      enable: true
+      option: ~
+    id132:
+      pose: [-6.53133, -1.398846, 0]
+      enable: true
+      option: ~
+    id133:
+      pose: [-5.128316, -7.237472, 0]
+      enable: true
+      option: ~
+    id134:
+      pose: [-7.504607, -7.242776, 0]
+      enable: true
+      option: ~
+    id135:
+      pose: [-5.114629, -7.238925, 0]
+      enable: true
+      option: ~
+    id136:
+      pose: [-2.691613, -7.258399, 0]
+      enable: true
+      option: ~
+    id137:
+      pose: [-3.705566, -1.414957, 0]
+      enable: true
+      option: ~
+    id138:
+      pose: [-6.675537, -1.422403, 0]
+      enable: true
+      option: ~
+  Vending machine:
+    id0:
+      pose: [2.159634, -5.948805, 0]
+      enable: true
+      option: ~
+    id1:
+      pose: [2.030475, -5.931658, 0]
+      enable: true
+      option: ~
+    id2:
+      pose: [1.998768, -5.930864, 0]
+      enable: true
+      option: ~
+    id3:
+      pose: [1.896036, -5.93883, 0]
+      enable: true
+      option: ~
+    id4:
+      pose: [1.918047, -5.894649, 0]
+      enable: true
+      option: ~

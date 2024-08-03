@@ -17,7 +17,7 @@ private:
     std::vector<std::vector<Landmark>> lm_list_;
 
     //----------parameters----------
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver3.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver9.yaml";
     // std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ex.yaml";
     //------------------------------
 public:
@@ -77,6 +77,7 @@ void visualize_landmark_node::read_yaml()
             }
             index++;
         }
+        ROS_INFO("Load %s", landmark_file_path.c_str());
     }
     catch(const std::exception& e)
     {

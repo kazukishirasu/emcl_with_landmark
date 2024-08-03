@@ -56,7 +56,7 @@ private:
 
     //----------parameters----------
     std::vector<std::string> landmark_name{"Door", "Elevator", "Vending machine"};
-    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver7.yaml";
+    std::string landmark_file_path = ros::package::getPath("emcl") += "/landmark/landmark_ver10.yaml";
     //------------------------------
 };
 
