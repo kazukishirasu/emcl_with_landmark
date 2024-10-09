@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>emcl</name>
+  <name>emcl_with_landmark</name>
   <version>0.0.0</version>
-  <description>The emcl package</description>
+  <description>The emcl_with_landmark package</description>
 
   <maintainer email="ryuichiueda@gmail.com">Ryuichi Ueda</maintainer>
   <license>LGPL</license>
