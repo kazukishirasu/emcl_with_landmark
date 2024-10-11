@@ -6,8 +6,9 @@
 
 #include "emcl/Pose.h"
 #include "emcl/LikelihoodFieldMap.h"
-#include "yolov5_pytorch_ros/BoundingBoxes.h"
 #include "yaml-cpp/yaml.h"
+#include <yolov5_pytorch_ros/BoundingBoxes.h>
+
 namespace emcl {
 
 
@@ -18,7 +19,7 @@ public:
 	Particle(double x, double y, double t, double w);
 
 	double likelihood(LikelihoodFieldMap *map, Scan &scan);
-    double vision_weight(yolov5_pytorch_ros::BoundingBoxes& bbox, YAML::Node& landmark_config,double phi_th, double R_th, double A, double w_img);
+	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img);
 	bool wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace);
 	Pose p_;
 	double w_;
