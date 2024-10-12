@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
@@ -22,6 +23,7 @@ catkin_package(
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS} )
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_library(Mcl src/Mcl.cpp)
 add_library(ExpResetMcl src/ExpResetMcl.cpp)

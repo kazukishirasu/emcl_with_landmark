@@ -8,6 +8,7 @@
 #include "emcl/LikelihoodFieldMap.h"
 #include "yaml-cpp/yaml.h"
 #include <yolov5_pytorch_ros/BoundingBoxes.h>
+#include <Eigen/Dense>
 
 namespace emcl {
 

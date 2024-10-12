@@ -21,7 +21,7 @@ ExpResetMcl::ExpResetMcl(const Pose &p, int num, const Scan &scan,
 				const int w_img)
 	: alpha_threshold_(alpha_th), open_space_threshold_(open_space_th),
 	  expansion_radius_position_(expansion_radius_position),
-	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map), bbox_(bbox), landmark_config_(landmark_config), w_img_(w_img)
+	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map)
 {
 }
 
@@ -29,7 +29,7 @@ ExpResetMcl::~ExpResetMcl()
 {
 }
 
-void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv)
+void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
 {
 	if(processed_seq_ == scan_.seq_)
 		return;
@@ -79,20 +79,20 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 
 	// if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 	// 	ROS_INFO("RESET");
-	// 	vision_sensorReset(bbox_, landmark_config_);
+	// 	vision_sensorReset(bbox, landmark_config, w_img);
 	// 	for(auto &p : particles_){
 	// 		p.w_ *= p.likelihood(map_.get(), scan);
-	// 		if (!bbox_.bounding_boxes.empty())
+	// 		if (!bbox.bounding_boxes.empty())
 	// 		{
-	// 			auto w_v = p.vision_weight(map_.get(), scan, bbox_, landmark_config_, w_img_);
+	// 			auto w_v = p.vision_weight(map_.get(), scan, bbox, landmark_config, w_img);
 	// 			p.w_ *= w_v;
 	// 		}
 	// 	}
 	// }
 	for (auto& p:particles_)
 	{
-		if (!bbox_.bounding_boxes.empty()){
-			p.vision_weight(map_.get(), scan, bbox_, landmark_config_, w_img_);
+		if (!bbox.bounding_boxes.empty()){
+			p.vision_weight(map_.get(), scan, bbox, landmark_config, w_img);
 		}
 	}
 	
@@ -118,7 +118,7 @@ void ExpResetMcl::expansionReset(void)
 	}
 }
 
-void ExpResetMcl::vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config)
+void ExpResetMcl::vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
 {
 }
 

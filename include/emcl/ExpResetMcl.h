@@ -22,18 +22,18 @@ public:
 			const int w_img);
 	~ExpResetMcl();
 
-	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv);
+	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv,
+					  const yolov5_pytorch_ros::BoundingBoxes& bbox,
+					  const YAML::Node& landmark_config,
+					  const int w_img);
 private:
 	double alpha_threshold_;
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
-	const yolov5_pytorch_ros::BoundingBoxes& bbox_;
-	const YAML::Node& landmark_config_;
-	const int w_img_;
 
 	void expansionReset(void);
-	void vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config);
+	void vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img);
 };
 
 }
