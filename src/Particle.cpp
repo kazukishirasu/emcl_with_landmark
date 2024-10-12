@@ -39,7 +39,6 @@ double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan)
 
 double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
 {
-	std::cout << "----------" << std::endl;
 	uint16_t t = p_.get16bitRepresentation();
 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
 				- scan.lidar_pose_y_*Mcl::sin_[t];
@@ -77,7 +76,8 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5
         }
 		ans += max;
 	}
-	std::cout << "vision : " << ans << std::endl;
+	ans = ans / bbox.bounding_boxes.size();
+	// std::cout << "vision : " << ans << std::endl;
 	return ans;
 }
 

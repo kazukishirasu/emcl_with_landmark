@@ -63,23 +63,27 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 	if(valid_beams == 0)
 		return;
 
-	for(auto &p : particles_)
+	for(auto &p : particles_){
 		p.w_ *= p.likelihood(map_.get(), scan);
+	}
 
 	alpha_ = normalizeBelief()/valid_beams;
 	//alpha_ = nonPenetrationRate( particles_.size() / 20, map_.get(), scan); //new version
 
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
+
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
 		expansionReset();
-		for(auto &p : particles_)
+		for(auto &p : particles_){
 			p.w_ *= p.likelihood(map_.get(), scan);
+		}
 	}
 
 	// if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 	// 	ROS_INFO("RESET");
 	// 	vision_sensorReset(bbox, landmark_config, w_img);
+	// 	// expansionReset();
 	// 	for(auto &p : particles_){
 	// 		p.w_ *= p.likelihood(map_.get(), scan);
 	// 		if (!bbox.bounding_boxes.empty())
@@ -89,13 +93,14 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 	// 		}
 	// 	}
 	// }
-	for (auto& p:particles_)
-	{
-		if (!bbox.bounding_boxes.empty()){
-			p.vision_weight(map_.get(), scan, bbox, landmark_config, w_img);
-		}
-	}
-	
+
+	// std::cout << "----------" << std::endl;
+	// for (auto& p:particles_)
+	// {
+	// 	if (!bbox.bounding_boxes.empty()){
+	// 		p.vision_weight(map_.get(), scan, bbox, landmark_config, w_img);
+	// 	}
+	// }
 
 	if(normalizeBelief() > 0.000001)
 		resampling();
