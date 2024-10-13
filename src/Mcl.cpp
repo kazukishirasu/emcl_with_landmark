@@ -119,7 +119,7 @@ void Mcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv)
 	}
 	*/
 
-	if(normalizeBelief() > 0.000001)
+	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
 	else
 		resetWeight();
@@ -227,16 +227,16 @@ void Mcl::setScan(const sensor_msgs::LaserScan::ConstPtr &msg)
 	scan_.range_max_= msg->range_max;
 }
 
-double Mcl::normalizeBelief(void)
+double Mcl::normalizeBelief(std::vector<Particle>& particles)
 {
 	double sum = 0.0;
-	for(const auto &p : particles_)
+	for(const auto &p : particles)
 		sum += p.w_;
 
 	if(sum < 0.000000000001)
 		return sum;
 
-	for(auto &p : particles_)
+	for(auto &p : particles)
 		p.w_ /= sum;
 
 	return sum;

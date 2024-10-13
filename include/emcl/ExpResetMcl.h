@@ -17,15 +17,13 @@ public:
 			double alpha_th, double open_space_th,
 			double expansion_radius_position,
 			double expansion_radius_orientation,
-			const yolov5_pytorch_ros::BoundingBoxes& bbox,
-			const YAML::Node& landmark_config,
-			const int w_img);
+			const YAML::Node& landmark_config);
 	~ExpResetMcl();
 
 	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv,
 					  const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					  const YAML::Node& landmark_config,
-					  const int w_img);
+					  const int w_img, const double ratio);
 private:
 	double alpha_threshold_;
 	double open_space_threshold_;

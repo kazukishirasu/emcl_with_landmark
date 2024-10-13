@@ -16,9 +16,7 @@ ExpResetMcl::ExpResetMcl(const Pose &p, int num, const Scan &scan,
 				double alpha_th, double open_space_th,
 				double expansion_radius_position,
 				double expansion_radius_orientation,
-				const yolov5_pytorch_ros::BoundingBoxes& bbox,
-				const YAML::Node& landmark_config,
-				const int w_img)
+				const YAML::Node& landmark_config)
 	: alpha_threshold_(alpha_th), open_space_threshold_(open_space_th),
 	  expansion_radius_position_(expansion_radius_position),
 	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map)
@@ -61,7 +59,7 @@ void ExpResetMcl::calc_inv_det(const YAML::Node& landmark_config)
 	}
 }
 
-void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
+void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio)
 {
 	if(processed_seq_ == scan_.seq_)
 		return;
@@ -99,42 +97,29 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 		p.w_ *= p.likelihood(map_.get(), scan);
 	}
 
-	alpha_ = normalizeBelief()/valid_beams;
-	//alpha_ = nonPenetrationRate( particles_.size() / 20, map_.get(), scan); //new version
+	alpha_ = normalizeBelief(particles_)/valid_beams;
+	// alpha_ = nonPenetrationRate( particles_.size() / 20, map_.get(), scan); //new version
 
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
-
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
+		vision_sensorReset(bbox, landmark_config, w_img);
 		expansionReset();
-		for(auto &p : particles_){
+		std::vector<Particle> vision_particles = particles_;
+		for (auto &p : particles_){
 			p.w_ *= p.likelihood(map_.get(), scan);
 		}
-	}
-
-	// if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
-	// 	ROS_INFO("RESET");
-	// 	vision_sensorReset(bbox, landmark_config, w_img);
-	// 	expansionReset();
-	// 	for(auto &p : particles_){
-	// 		p.w_ *= p.likelihood(map_.get(), scan);
-	// 		if (!bbox.bounding_boxes.empty())
-	// 		{
-	// 			auto w_v = p.vision_weight(map_.get(), scan, bbox, data_, w_img);
-	// 			p.w_ *= w_v;
-	// 		}
-	// 	}
-	// }
-
-	std::cout << "----------" << std::endl;
-	for (auto& p:particles_)
-	{
-		if (!bbox.bounding_boxes.empty()){
-			p.vision_weight(map_.get(), scan, bbox, data_, w_img);
+		normalizeBelief(particles_);
+		for (auto &p : vision_particles){
+			p.w_ *= p.vision_weight(map_.get(), scan, bbox, data_, w_img);
+		}
+		normalizeBelief(vision_particles);
+		for (size_t i = 0; i < particles_.size(); i++){
+			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
 
-	if(normalizeBelief() > 0.000001)
+	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
 	else
 		resetWeight();

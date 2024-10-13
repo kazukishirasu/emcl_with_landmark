@@ -52,7 +52,7 @@ protected:
 
 	double normalizeAngle(double t);
 	void resampling(void);
-	double normalizeBelief(void);
+	double normalizeBelief(std::vector<Particle>&);
 	void resetWeight(void);
 
 	std::shared_ptr<OdomModel> odom_model_;

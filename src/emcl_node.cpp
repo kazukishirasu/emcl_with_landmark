@@ -77,8 +77,9 @@ void EMclNode::initPF(void)
 	landmark_config_ = YAML::LoadFile(landmark_file_path);
 	int w_img;
 	private_nh_.param("ImageWide", w_img_, 1280);
+	private_nh_.param("ratio", ratio_, 1.0);
 
-	pf_.reset(new ExpResetMcl(init_pose, num_particles, scan, om, map, alpha_th, open_space_th, ex_rad_pos, ex_rad_ori, bbox_, landmark_config_, w_img_));
+	pf_.reset(new ExpResetMcl(init_pose, num_particles, scan, om, map, alpha_th, open_space_th, ex_rad_pos, ex_rad_ori, landmark_config_));
 }
 
 std::shared_ptr<OdomModel> EMclNode::initOdometry(void)
@@ -159,7 +160,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, inv, bbox_, landmark_config_, w_img_);
+	pf_->sensorUpdate(lx, ly, lt, inv, bbox_, landmark_config_, w_img_, ratio_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;
