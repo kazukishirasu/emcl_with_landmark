@@ -12,15 +12,21 @@
 
 namespace emcl {
 
-
-
 class Particle
 {
 public:
 	Particle(double x, double y, double t, double w);
 
+	struct Data
+	{
+		std::string name;
+		std::vector<Eigen::Vector2d> mean;
+		std::vector<Eigen::Matrix2d> inv;
+		std::vector<double> det;
+	};
+
 	double likelihood(LikelihoodFieldMap *map, Scan &scan);
-	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img);
+	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Data>& data, const int w_img);
 	bool wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace);
 	Pose p_;
 	double w_;

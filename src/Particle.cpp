@@ -37,7 +37,7 @@ double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan)
 	return ans;
 }
 
-double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
+double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Data>& data, const int w_img)
 {
 	uint16_t t = p_.get16bitRepresentation();
 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
@@ -56,29 +56,24 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5
 		Eigen::Vector2d observation_point;
 		observation_point(0, 0) = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
 		observation_point(1, 0) = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
-		for(YAML::const_iterator it=landmark_config["landmark"][b.Class].begin(); it!=landmark_config["landmark"][b.Class].end(); ++it){
-			Eigen::Vector2d mean;
-			mean(0, 0) = it->second["pose"][0].as<double>();
-			mean(1, 0) = it->second["pose"][1].as<double>();
-
-			Eigen::Matrix2d cov;
-			cov(0, 0) = it->second["cov"][0][0].as<double>();
-			cov(0, 1) = it->second["cov"][0][1].as<double>();
-			cov(1, 0) = it->second["cov"][1][0].as<double>();
-			cov(1, 1) = it->second["cov"][1][1].as<double>();
-
-			Eigen::Vector2d diff = observation_point - mean;
-			Eigen::Matrix2d cov_inv = cov.inverse();
-			double cov_det = cov.determinant();
-			double exponent = std::exp(-0.5 * diff.transpose() * cov_inv * diff);
-			double likelihood = (1 / ((2 * M_PI) * std::sqrt(cov_det))) * exponent;
-			max = std::max(max, likelihood);
-        }
-		ans += max;
+		for (const auto& d:data)
+		{
+			if (d.name == b.Class)
+			{
+				for (size_t i = 0; i < d.mean.size(); i++)
+				{
+					Eigen::Vector2d diff = observation_point - d.mean[i];
+					double exponent = std::exp(-0.5 * diff.transpose() * d.inv[i] * diff);
+					double likelihood = (1 / ((2 * M_PI) * std::sqrt(d.det[i]))) * exponent;
+					max = std::max(max, likelihood);
+				}
+				ans += max;
+			}
+		}
 	}
 	ans = ans / bbox.bounding_boxes.size();
-	// std::cout << "vision : " << ans << std::endl;
-	return ans;
+	// std::cout << "vision weight: " << ans << std::endl;
+	return ans * 100;
 }
 
 bool Particle::wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace)

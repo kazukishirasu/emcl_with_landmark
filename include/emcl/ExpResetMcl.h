@@ -31,7 +31,9 @@ private:
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
+	std::vector<Particle::Data> data_;
 
+	void calc_inv_det(const YAML::Node& landmark_config);
 	void expansionReset(void);
 	void vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img);
 };
