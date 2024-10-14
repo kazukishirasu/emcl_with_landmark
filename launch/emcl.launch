@@ -1,15 +1,15 @@
 <launch>
   <!-- Arguments -->
-  <arg name="scan_topic"     default="scan"/>
-  <arg name="initial_pose_x" default="-2.0"/>
-  <arg name="initial_pose_y" default="-0.5"/>
-  <arg name="initial_pose_a" default="0.0"/>
-  <arg name="landmark_file_path" default="$(find emcl)/landmark_list.yaml"/>
-  <arg name="phi_th" default="0.26"/>
-  <arg name="R_th" default="10.0"/>
-  <arg name="A" default="15.0"/>
-  <arg name="B" default="2"/>
-  <arg name="ImageWide" default="1280.0"/>
+  <arg name="scan_topic"          default="scan"/>
+  <arg name="initial_pose_x"      default="-2.0"/>
+  <arg name="initial_pose_y"      default="-0.5"/>
+  <arg name="initial_pose_a"      default="0.0"/>
+  <arg name="landmark_file_path"  default="$(find emcl)/landmark_list.yaml"/>
+  <arg name="phi_th"              default="0.26"/>
+  <arg name="R_th"                default="20.0"/>
+  <arg name="A"                   default="0.99"/>
+  <arg name="B"                   default="10"/>
+  <arg name="ImageWide"           default="1280.0"/>
 
   <!-- EMCL -->
   <node pkg="emcl_with_landmark" type="emcl_node" name="emcl_node" output="screen">
