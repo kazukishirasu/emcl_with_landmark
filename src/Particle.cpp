@@ -58,8 +58,8 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const yolov5
 		int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
 		uint16_t a = scan.directions_16bit_[i] + t + lidar_yaw;
 		Eigen::Vector2d observation_point;
-		observation_point(0, 0) = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
-		observation_point(1, 0) = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
+		observation_point(0) = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
+		observation_point(1) = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
 		for (const auto& d:data)
 		{
 			if (d.name == b.Class)
