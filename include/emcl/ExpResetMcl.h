@@ -8,6 +8,8 @@
 
 namespace emcl {
 
+using DistWithName = std::pair<double, std::array<std::string, 2>>;
+
 class ExpResetMcl : public Mcl
 {
 public: 
@@ -23,17 +25,23 @@ public:
 	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv,
 					  const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					  const YAML::Node& landmark_config,
-					  const int w_img, const double ratio);
+					  const int w_img, const double ratio,
+					  const double R_th, const int B);
 private:
 	double alpha_threshold_;
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
 	std::vector<Particle::Data> data_;
+	std::vector<DistWithName> landmark_distance_;
 
 	void calc_inv_det(const YAML::Node& landmark_config);
+	void calc_distance(const YAML::Node& landmark_config);
 	void expansionReset(void);
-	void vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img);
+	void vision_sensorReset(const Scan& scan,
+							const yolov5_pytorch_ros::BoundingBoxes& bbox,
+							const YAML::Node& landmark_config, const int w_img,
+							const double R_th, const int B);
 };
 
 }

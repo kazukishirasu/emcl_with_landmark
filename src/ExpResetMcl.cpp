@@ -22,6 +22,7 @@ ExpResetMcl::ExpResetMcl(const Pose &p, int num, const Scan &scan,
 	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map)
 {
 	calc_inv_det(landmark_config);
+	calc_distance(landmark_config);
 }
 
 ExpResetMcl::~ExpResetMcl()
@@ -59,7 +60,45 @@ void ExpResetMcl::calc_inv_det(const YAML::Node& landmark_config)
 	}
 }
 
-void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio)
+void ExpResetMcl::calc_distance(const YAML::Node& landmark_config){
+	std::vector<std::pair<geometry_msgs::Point, std::string>> landmark_list;
+	YAML::Node landmark = landmark_config["landmark"];
+	for (YAML::const_iterator itr=landmark.begin(); itr!=landmark.end(); ++itr){
+		std::string name = itr->first.as<std::string>();
+		YAML::Node config = landmark[name];
+		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
+			geometry_msgs::Point point;
+			point.x = it->second["pose"][0].as<double>();
+			point.y = it->second["pose"][1].as<double>();
+			point.z = it->second["pose"][2].as<double>();
+			std::string name_id = name + "-" + it->first.as<std::string>();
+			landmark_list.push_back(std::make_pair(point, name_id));
+		}
+	}
+	for (const auto& base:landmark_list){
+		for (const auto& target:landmark_list){
+			if (base.second != target.second){
+				std::array<std::string, 2> name_pair = {base.second, target.second};
+				std::sort(name_pair.begin(), name_pair.end());
+				bool find = false;
+				for (const auto& distance:landmark_distance_){
+					if (distance.second == name_pair){
+						find = true;
+						break;
+					}
+				}
+				if (!find){
+					double dx = base.first.x - target.first.x;
+					double dy = base.first.y - target.first.y;
+					double dist = std::sqrt((dx * dx) + (dy * dy));
+					landmark_distance_.push_back(std::make_pair(dist, name_pair));
+				}
+			}
+		}
+	}
+}
+
+void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
 {
 	if(processed_seq_ == scan_.seq_)
 		return;
@@ -103,7 +142,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
-		vision_sensorReset(bbox, landmark_config, w_img);
+		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B);
 		expansionReset();
 		std::vector<Particle> vision_particles = particles_;
 		for (auto &p : particles_){
@@ -140,26 +179,42 @@ void ExpResetMcl::expansionReset(void)
 	}
 }
 
-void ExpResetMcl::vision_sensorReset(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img)
+void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B)
 {
-	int B = 1;
-	double R_th = 10.0;
 	srand((unsigned)time(NULL));
-    if (bbox.bounding_boxes.size() != 0) {
-        for(auto observed_landmark : bbox.bounding_boxes){
-            for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
-                for (int i = 0; i <= B; i++) {
-                    Pose p_;
-                    p_.x_ = l_->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-                    p_.y_ = l_->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
-                    p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
-                    Particle P(p_.x_, p_.y_, p_.t_, 0);
-					particles_.push_back(P);
-					particles_.erase(particles_.begin());
-                }
-            }
-        }
-    }
+	auto reset1 = [](std::vector<Particle>& particles,
+					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
+					 const YAML::Node& landmark_config,
+					 const double R_th, const int B){
+		size_t index = 0;
+		for (const auto& b:bbox.bounding_boxes){
+			for (YAML::const_iterator it=landmark_config["landmark"][b.Class].begin(); it!=landmark_config["landmark"][b.Class].end(); ++it)
+			{
+				for (size_t i = 0; i < B; i++)
+				{
+					particles[index].p_.x_ = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+					particles[index].p_.y_ = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+					particles[index].p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
+					index++;
+				}
+			}
+		}
+	};
+	auto reset2 = [](std::vector<Particle>& particles,
+					 const Scan& scan,
+					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
+					 std::vector<DistWithName>& landmark_distance){
+	};
+
+	if (bbox.bounding_boxes.empty()){
+		return;
+	}else if (bbox.bounding_boxes.size() == 1){
+		reset1(particles_, bbox, landmark_config, R_th, B);
+	}else{
+		reset1(particles_, bbox, landmark_config, R_th, B);
+		reset2(particles_, scan, bbox, landmark_distance_);
+	}
+	
 }
 
 }
