@@ -77,7 +77,9 @@ void EMclNode::initPF(void)
 	landmark_config_ = YAML::LoadFile(landmark_file_path);
 	int w_img;
 	private_nh_.param("ImageWide", w_img_, 1280);
-	private_nh_.param("ratio", ratio_, 1.0);
+	private_nh_.param("weight_ratio", ratio_, 0.5);
+	private_nh_.param("R_th", R_th_, 20.0);
+    private_nh_.param("B", B_, 1);
 
 	pf_.reset(new ExpResetMcl(init_pose, num_particles, scan, om, map, alpha_th, open_space_th, ex_rad_pos, ex_rad_ori, landmark_config_));
 }
@@ -160,7 +162,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, inv, bbox_, landmark_config_, w_img_, ratio_);
+	pf_->sensorUpdate(lx, ly, lt, inv, bbox_, landmark_config_, w_img_, ratio_, R_th_, B_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;
