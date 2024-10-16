@@ -264,6 +264,35 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// 	}
 		// }
 		// std::cout << observed_distance.size() << std::endl;
+
+		std::vector<std::string> prediction_list;
+		for (const auto& ob:observed_distance){
+			for (const auto& ld:landmark_distance){
+				if (ob.base.name == ld.base.name){
+					int count = 0;
+					for (const auto& ob_target:ob.target){
+						for (const auto& ld_target:ld.target){
+							if (ob_target.first.name == ld_target.first.name){
+								double diff = std::abs(ob_target.second - ld_target.second);
+								if (diff < 0.5){
+									count++;
+									break;
+								}
+							}
+						}
+					}
+					std::string name_id = ld.base.name + std::to_string(ld.base.id);
+					auto itr = std::find(prediction_list.begin(), prediction_list.end(), name_id);
+					if (count > ob.target.size() * 0.6 && itr == prediction_list.end()){
+						prediction_list.push_back(name_id);
+					}
+				}
+			}
+		}
+		// std::sort(prediction_list.begin(), prediction_list.end());
+		// for (const auto& p:prediction_list){
+		// 	std::cout << p << std::endl;
+		// }
 	};
 
 	// if (bbox.bounding_boxes.empty()){
