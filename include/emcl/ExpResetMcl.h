@@ -8,8 +8,6 @@
 
 namespace emcl {
 
-using DistWithName = std::pair<double, std::array<std::string, 2>>;
-
 class ExpResetMcl : public Mcl
 {
 public: 
@@ -33,7 +31,6 @@ private:
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
 	std::vector<Particle::Data> data_;
-	std::vector<DistWithName> landmark_distance_;
 
 	void calc_inv_det(const YAML::Node& landmark_config);
 	void calc_distance(const YAML::Node& landmark_config);
@@ -42,6 +39,16 @@ private:
 							const yolov5_pytorch_ros::BoundingBoxes& bbox,
 							const YAML::Node& landmark_config, const int w_img,
 							const double R_th, const int B);
+
+	struct NameWithId{
+		std::string name;
+		int id;
+	};
+	struct DistWithConfig{
+		NameWithId base;
+		std::vector<std::pair<NameWithId, double>> target;
+	};
+	std::vector<DistWithConfig> landmark_distance_;
 };
 
 }
