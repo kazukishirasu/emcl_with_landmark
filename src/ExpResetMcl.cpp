@@ -163,6 +163,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
+	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -264,13 +265,12 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// }
 		// std::cout << observed_distance.size() << std::endl;
 
-		std::vector<DistWithConfig> prediction_list;
+		std::vector<std::vector<NameWithId>> prediction_list;
 		for (const auto& ob:observed_distance){
 			for (auto ld:landmark_distance){
 				if (ob.base.name == ld.base.name){
-					DistWithConfig dc;
-					dc.base.name = ld.base.name;
-					dc.base.id = ld.base.id;
+					std::vector<NameWithId> result;
+					result.push_back(ld.base);
 					for (const auto& ob_target:ob.target){
 						double min = std::numeric_limits<double>::max();
 						int index = 0, min_index = 0;
@@ -285,21 +285,21 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 							index++;
 						}
 						if (min != std::numeric_limits<double>::max()){
-							dc.target.push_back(ld.target[min_index]);
+							result.push_back(ld.target[min_index].first);
 							ld.target.erase(ld.target.begin() + min_index);
 						}
 					}
-					if (dc.target.size() > ob.target.size() * 0.6){
-						prediction_list.push_back(dc);
+					if (result.size() - 1 > ob.target.size() * 0.6){
+						prediction_list.push_back(result);
 					}
 				}
 			}
 		}
 		// for (const auto& p:prediction_list){
-		// 	std::cout << "[" << p.base.name << p.base.id << "]" << std::endl;
-		// 	for (const auto& t:p.target){
-		// 		std::cout << t.first.name << t.first.id << std::endl;
+		// 	for (const auto& l:p){
+		// 		std::cout << l.name << l.id << std::endl;
 		// 	}
+		// 	std::cout << std::endl;
 		// }
 	};
 
