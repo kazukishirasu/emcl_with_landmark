@@ -163,7 +163,6 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -265,33 +264,42 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// }
 		// std::cout << observed_distance.size() << std::endl;
 
-		std::vector<std::string> prediction_list;
+		std::vector<DistWithConfig> prediction_list;
 		for (const auto& ob:observed_distance){
-			for (const auto& ld:landmark_distance){
+			for (auto ld:landmark_distance){
 				if (ob.base.name == ld.base.name){
-					int count = 0;
+					DistWithConfig dc;
+					dc.base.name = ld.base.name;
+					dc.base.id = ld.base.id;
 					for (const auto& ob_target:ob.target){
+						double min = std::numeric_limits<double>::max();
+						int index = 0, min_index = 0;
 						for (const auto& ld_target:ld.target){
 							if (ob_target.first.name == ld_target.first.name){
 								double diff = std::abs(ob_target.second - ld_target.second);
-								if (diff < 0.5){
-									count++;
-									break;
+								if (diff < 0.5 && diff < min){
+									min_index = index;
+									min = std::min(diff, min);
 								}
 							}
+							index++;
+						}
+						if (min != std::numeric_limits<double>::max()){
+							dc.target.push_back(ld.target[min_index]);
+							ld.target.erase(ld.target.begin() + min_index);
 						}
 					}
-					std::string name_id = ld.base.name + std::to_string(ld.base.id);
-					auto itr = std::find(prediction_list.begin(), prediction_list.end(), name_id);
-					if (count > ob.target.size() * 0.6 && itr == prediction_list.end()){
-						prediction_list.push_back(name_id);
+					if (dc.target.size() > ob.target.size() * 0.6){
+						prediction_list.push_back(dc);
 					}
 				}
 			}
 		}
-		// std::sort(prediction_list.begin(), prediction_list.end());
 		// for (const auto& p:prediction_list){
-		// 	std::cout << p << std::endl;
+		// 	std::cout << "[" << p.base.name << p.base.id << "]" << std::endl;
+		// 	for (const auto& t:p.target){
+		// 		std::cout << t.first.name << t.first.id << std::endl;
+		// 	}
 		// }
 	};
 
