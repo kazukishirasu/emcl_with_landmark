@@ -20,7 +20,8 @@ public:
 			const YAML::Node& landmark_config);
 	~ExpResetMcl();
 
-	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv,
+	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t,
+					  double t, bool inv,
 					  const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					  const YAML::Node& landmark_config,
 					  const int w_img, const double ratio,
@@ -38,11 +39,13 @@ private:
 	void vision_sensorReset(const Scan& scan,
 							const yolov5_pytorch_ros::BoundingBoxes& bbox,
 							const YAML::Node& landmark_config, const int w_img,
-							const double R_th, const int B);
+							const double R_th, const int B, double t);
 
 	struct NameWithId{
 		std::string name;
 		int id;
+		double yaw;
+		double dist;
 	};
 	struct DistWithConfig{
 		NameWithId base;

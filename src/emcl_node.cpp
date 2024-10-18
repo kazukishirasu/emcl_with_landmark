@@ -162,7 +162,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, inv, bbox_, landmark_config_, w_img_, ratio_, R_th_, B_);
+	pf_->sensorUpdate(lx, ly, lt, t, inv, bbox_, landmark_config_, w_img_, ratio_, R_th_, B_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;

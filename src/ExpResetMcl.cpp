@@ -104,7 +104,7 @@ void ExpResetMcl::calc_distance(const YAML::Node& landmark_config){
 	// std::cout << landmark_distance_.size() << std::endl;
 }
 
-void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
+void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
 {
 	if(processed_seq_ == scan_.seq_)
 		return;
@@ -148,7 +148,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
-		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B);
+		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
 		expansionReset();
 		std::vector<Particle> vision_particles = particles_;
 		for (auto &p : particles_){
@@ -163,7 +163,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, b
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B);
+	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -186,7 +186,7 @@ void ExpResetMcl::expansionReset(void)
 	}
 }
 
-void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B)
+void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, double t)
 {
 	srand((unsigned)time(NULL));
 	auto reset1 = [](std::vector<Particle>& particles,
@@ -211,40 +211,46 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					 const Scan& scan,
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const int w_img,
-					 std::vector<DistWithConfig>& landmark_distance){
-		std::vector<std::string> class_list;
+					 std::vector<DistWithConfig>& landmark_distance,
+					 const YAML::Node& landmark_config,
+					 double t){
+		std::vector<int> x_list;
 		for (const auto& b:bbox.bounding_boxes){
-			auto itr = std::find(class_list.begin(), class_list.end(), b.Class);
-			if (itr == class_list.end()){
-				class_list.push_back(b.Class);
-			}
+			int x = (b.xmax + b.xmin) / 2;
+			x_list.push_back(x);
 		}
+		std::sort(x_list.begin(), x_list.end());
 
+		// ロボットから観測したランドマークまでの距離を計算
 		std::vector<std::pair<NameWithId, geometry_msgs::Point>> landmark_list;
-		for (const auto& c:class_list){
-			int id = 0;
+		int id = 0;
+		for (const auto& x:x_list){
 			for (const auto& b:bbox.bounding_boxes){
-				if (b.Class == c){
+				if ((b.xmax + b.xmin) / 2 == x){
+					NameWithId name_id;
+					geometry_msgs::Point point;
 					auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
+					auto tmp = yaw;
+					tmp += t;
 					if (yaw < 0) yaw += (M_PI * 2);
 					int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
 					double dist = scan.ranges_[i];
-					geometry_msgs::Point point;
-					point.x = dist * cos(yaw);
-					point.y = dist * sin(yaw);
-					NameWithId name_id;
+					point.x = dist * std::cos(yaw);
+					point.y = dist * std::sin(yaw);
 					name_id.name = b.Class;
 					name_id.id = id;
+					name_id.dist = dist;
+					name_id.yaw = tmp;
 					landmark_list.push_back(std::make_pair(name_id, point));
 					id++;
 				}
 			}
 		}
 
+		// 各ランドマーク間の距離を計算
 		std::vector<DistWithConfig> observed_distance;
 		for (const auto& base:landmark_list){
 			DistWithConfig dc;
-			dc.base = base.first;
 			std::string base_name_id = base.first.name + std::to_string(base.first.id);
 			for (const auto& target:landmark_list){
 				std::string target_name_id = target.first.name + std::to_string(target.first.id);
@@ -255,37 +261,45 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					dc.target.push_back(std::make_pair(target.first, dist));
 				}
 			}
-		observed_distance.push_back(dc);
+			dc.base = base.first;
+			observed_distance.push_back(dc);
 		}
-		// for (const auto& ob:observed_distance){
-		// std::cout << ob.base.name << ob.base.id << std::endl;
-		// 	for (const auto& target:ob.target){
-		// 		std::cout << target.first.name << target.first.id << " : " << target.second << std::endl;
-		// 	}
-		// }
-		// std::cout << observed_distance.size() << std::endl;
 
+		// 各ランドマーク間の距離情報からどのランドマークを観測しているか予測する
 		std::vector<std::vector<NameWithId>> prediction_list;
 		for (const auto& ob:observed_distance){
 			for (auto ld:landmark_distance){
 				if (ob.base.name == ld.base.name){
 					std::vector<NameWithId> result;
-					result.push_back(ld.base);
+					NameWithId b_name_id;
+					b_name_id.name = ld.base.name;
+					b_name_id.id = ld.base.id;
+					b_name_id.yaw = ob.base.yaw;
+					b_name_id.dist = ob.base.dist;
+					result.push_back(b_name_id);
 					for (const auto& ob_target:ob.target){
 						double min = std::numeric_limits<double>::max();
 						int index = 0, min_index = 0;
+						double yaw = 0, dist = 0;
 						for (const auto& ld_target:ld.target){
 							if (ob_target.first.name == ld_target.first.name){
 								double diff = std::abs(ob_target.second - ld_target.second);
 								if (diff < 0.5 && diff < min){
 									min_index = index;
 									min = std::min(diff, min);
+									yaw = ob_target.first.yaw;
+									dist = ob_target.first.dist;
 								}
 							}
 							index++;
 						}
 						if (min != std::numeric_limits<double>::max()){
-							result.push_back(ld.target[min_index].first);
+							NameWithId t_name_id;
+							t_name_id.name = ld.target[min_index].first.name;
+							t_name_id.id = ld.target[min_index].first.id;
+							t_name_id.yaw = yaw;
+							t_name_id.dist = dist;
+							result.push_back(t_name_id);
 							ld.target.erase(ld.target.begin() + min_index);
 						}
 					}
@@ -295,23 +309,71 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				}
 			}
 		}
+
+		// ロボットの座標を計算
+		std::vector<std::pair<std::string, int>> target_landmark;
+		for (const auto& p:prediction_list){
+			for (const auto& config:p){
+				std::pair<std::string, int> pair;
+				pair = std::make_pair(config.name, config.id);
+				auto itr = std::find(target_landmark.begin(), target_landmark.end(), pair);
+				if (itr == target_landmark.end()){
+					target_landmark.push_back(pair);
+				}
+			}
+		}
+		std::map<std::string, Eigen::Vector2d> point;
+		for (const auto& t:target_landmark){
+			std::string name_id = t.first + std::to_string(t.second);
+			Eigen::Vector2d vec;
+			vec(0) = landmark_config["landmark"][t.first]["id" + std::to_string(t.second)]["pose"][0].as<double>();
+			vec(1) = landmark_config["landmark"][t.first]["id" + std::to_string(t.second)]["pose"][1].as<double>();
+			point[name_id] = vec;
+		}
+		
+		int i = 0;
+		for (const auto& p:prediction_list){
+			for (const auto& config:p){
+				std::string name_id = config.name + std::to_string(config.id);
+				double x = point[name_id](0) + (config.dist * std::cos(config.yaw));
+				double y = point[name_id](1) + (config.dist * std::sin(config.yaw));
+				// std::cout << "x : " << x << " y :" << y << std::endl;
+				for (size_t j = 0; j < 10; j++){
+					particles[i].p_.x_ = x;
+					particles[i].p_.y_ = y;
+					i++;
+				}
+			}
+		}
+		
 		// for (const auto& p:prediction_list){
-		// 	for (const auto& l:p){
-		// 		std::cout << l.name << l.id << std::endl;
-		// 	}
-		// 	std::cout << std::endl;
+		// 	std::string name_id1 = p[0].name + std::to_string(p[0].id);
+		// 	std::string name_id2 = p[1].name + std::to_string(p[1].id);
+		// 	Eigen::Matrix2d A;
+		// 	A(0, 0) = tan(p[0].yaw);
+		// 	A(0, 1) = -1;
+		// 	A(1, 0) = -1;
+		// 	A(1, 1) = tan(p[1].yaw);
+
+		// 	Eigen::Vector2d B;
+		// 	B(0) = tan(p[0].yaw * point[name_id1](0) - point[name_id1](1));
+		// 	B(1) = tan(p[1].yaw * point[name_id2](0) - point[name_id2](1));
+
+		// 	Eigen::Vector2d x = A.colPivHouseholderQr().solve(B);
+		// 	std::cout << "ans x: \n" << x << std::endl;
 		// }
 	};
 
-	// if (bbox.bounding_boxes.empty()){
-	// 	return;
-	// }else if (bbox.bounding_boxes.size() == 1){
-	// 	reset1(particles_, bbox, landmark_config, R_th, B);
-	// }else{
-	// 	reset1(particles_, bbox, landmark_config, R_th, B);
-	// 	reset2(particles_, scan, bbox, w_img, landmark_distance_);
-	// }
-	reset2(particles_, scan, bbox, w_img, landmark_distance_);
+	if (bbox.bounding_boxes.empty()){
+		return;
+	}else if (bbox.bounding_boxes.size() == 1){
+		reset1(particles_, bbox, landmark_config, R_th, B);
+	}else{
+		// reset1(particles_, bbox, landmark_config, R_th, B);
+		reset2(particles_, scan, bbox, w_img, landmark_distance_, landmark_config, t);
+	}
+	// if (!bbox.bounding_boxes.empty())
+	// 	reset2(particles_, scan, bbox, w_img, landmark_distance_, landmark_config);
 }
 
 }
