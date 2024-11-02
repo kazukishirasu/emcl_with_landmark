@@ -31,7 +31,7 @@ private:
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
-	std::vector<Particle::Data> data_;
+	std::vector<Particle::InvDet> invdet_list_;
 
 	void calc_inv_det(const YAML::Node& landmark_config);
 	void calc_distance(const YAML::Node& landmark_config);
@@ -41,17 +41,20 @@ private:
 							const YAML::Node& landmark_config, const int w_img,
 							const double R_th, const int B, double t);
 
-	struct NameWithId{
+	// ランドマーク情報
+	struct LandmarkInfo{
 		std::string name;
-		int id;
-		double yaw;
-		double dist;
+		unsigned int id;
+		geometry_msgs::Point point;
+		float dist;
+		float yaw;
 	};
-	struct DistWithConfig{
-		NameWithId base;
-		std::vector<std::pair<NameWithId, double>> target;
+	// baseのランドマークからtargetのランドマークまでの距離を格納
+	struct DistanceList{
+		LandmarkInfo base;
+		std::vector<LandmarkInfo> target;
 	};
-	std::vector<DistWithConfig> landmark_distance_;
+	std::vector<DistanceList> map_list_;
 };
 
 }

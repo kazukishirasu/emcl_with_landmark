@@ -32,14 +32,12 @@ ExpResetMcl::~ExpResetMcl()
 void ExpResetMcl::calc_inv_det(const YAML::Node& landmark_config)
 {
 	YAML::Node landmark = landmark_config["landmark"];
-	for (YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it)
-	{
-		Particle::Data data;
+	for (YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it){
+		Particle::InvDet invdet;
 		std::string name = it->first.as<std::string>();
-		data.name = name;
+		invdet.name = name;
 		YAML::Node config = landmark[name];
-		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
-		{
+		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
 			Eigen::Vector2d mean;
 			mean(0) = it->second["pose"][0].as<double>();
 			mean(1) = it->second["pose"][1].as<double>();
@@ -52,56 +50,65 @@ void ExpResetMcl::calc_inv_det(const YAML::Node& landmark_config)
 
 			Eigen::Matrix2d cov_inv = cov.inverse();
 			double cov_det = cov.determinant();
-			data.mean.push_back(mean);
-			data.inv.push_back(cov_inv);
-			data.det.push_back(cov_det);
+			invdet.mean.push_back(mean);
+			invdet.inv.push_back(cov_inv);
+			invdet.det.push_back(cov_det);
 		}
-		data_.push_back(data);
+		invdet_list_.push_back(invdet);
 	}
 }
 
-void ExpResetMcl::calc_distance(const YAML::Node& landmark_config){
-	std::vector<std::pair<NameWithId, geometry_msgs::Point>> landmark_list;
-	NameWithId name_id;
-	YAML::Node landmark = landmark_config["landmark"];
-	for (YAML::const_iterator itr=landmark.begin(); itr!=landmark.end(); ++itr){
-		std::string name = itr->first.as<std::string>();
-		name_id.name = name;
-		int id = 0;
-		YAML::Node config = landmark[name];
-		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
-			geometry_msgs::Point point;
-			point.x = it->second["pose"][0].as<double>();
-			point.y = it->second["pose"][1].as<double>();
-			point.z = it->second["pose"][2].as<double>();
-			name_id.id = id;
-			landmark_list.push_back(std::make_pair(name_id, point)); 
-			id++;
-		}
-	}
-
-	for (const auto& base:landmark_list){
-		DistWithConfig dc;
-		dc.base = base.first;
-		std::string base_name_id = base.first.name + std::to_string(base.first.id);
-		for (const auto& target:landmark_list){
-			std::string target_name_id = target.first.name + std::to_string(target.first.id);
-			if (target_name_id != base_name_id){
-				double dx = base.second.x - target.second.x;
-				double dy = base.second.y - target.second.y;
-				double dist = std::sqrt((dx * dx) + (dy * dy));
-				dc.target.push_back(std::make_pair(target.first, dist));
+void ExpResetMcl::calc_distance(const YAML::Node& landmark_config)
+{
+	YAML::Node base = landmark_config["landmark"];
+	for (YAML::const_iterator b_itr=base.begin(); b_itr!=base.end(); ++b_itr){
+		std::string base_name = b_itr->first.as<std::string>();
+		unsigned int base_id = 0;
+		YAML::Node base_config = base[base_name];
+		for (YAML::const_iterator bc_itr=base_config.begin(); bc_itr!=base_config.end(); ++bc_itr){
+			float bx = bc_itr->second["pose"][0].as<float>();
+			float by = bc_itr->second["pose"][1].as<float>();
+			LandmarkInfo base_info;
+			base_info.name = base_name;
+			base_info.id = base_id;
+			base_info.point.x = bx;
+			base_info.point.y = by;
+			base_info.dist = 0.0;
+			DistanceList dist_list;
+			dist_list.base = base_info;
+			YAML::Node target = landmark_config["landmark"];
+			for (YAML::const_iterator t_itr=target.begin(); t_itr!=target.end(); ++t_itr){
+				std::string target_name = t_itr->first.as<std::string>();
+				unsigned int target_id = 0;
+				YAML::Node target_config = target[target_name];
+				for (YAML::const_iterator tc_itr=target_config.begin(); tc_itr!=target_config.end(); ++tc_itr){
+					if (target_name != base_name || target_id != base_id){
+						float tx = tc_itr->second["pose"][0].as<float>();
+						float ty = tc_itr->second["pose"][1].as<float>();
+						float dx = bx - tx;
+						float dy = by - ty;
+						float dist = std::sqrt((dx * dx) + (dy * dy));
+						LandmarkInfo target_info;
+						target_info.name = target_name;
+						target_info.id = target_id;
+						target_info.point.x = tx;
+						target_info.point.y = ty;
+						target_info.dist = dist;
+						dist_list.target.push_back(target_info);
+					}
+					target_id++;
+				}
 			}
+			map_list_.push_back(dist_list);
+			base_id++;
 		}
-		landmark_distance_.push_back(dc);
 	}
-	// for (const auto& ld:landmark_distance_){
-	// 	std::cout << ld.base.name << ld.base.id << std::endl;
-	// 	for (const auto& target:ld.target){
-	// 		std::cout << target.first.name << target.first.id << " : " << target.second << std::endl;
+	// for (const auto& a:map_list_){
+	// 	std::cout << a.base.name << a.base.id << std::endl;
+	// 	for (const auto& b:a.target){
+	// 		std::cout << " " << b.name << b.id << " " << b.dist << std::endl;
 	// 	}
 	// }
-	// std::cout << landmark_distance_.size() << std::endl;
 }
 
 void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
@@ -156,14 +163,14 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 		}
 		normalizeBelief(particles_);
 		for (auto &p : vision_particles){
-			p.w_ *= p.vision_weight(map_.get(), scan, bbox, data_, w_img);
+			p.w_ *= p.vision_weight(map_.get(), scan, bbox, invdet_list_, w_img);
 		}
 		normalizeBelief(vision_particles);
 		for (size_t i = 0; i < particles_.size(); i++){
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
+	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -193,187 +200,102 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const YAML::Node& landmark_config,
 					 const double R_th, const int B){
-		size_t index = 0;
-		for (const auto& b:bbox.bounding_boxes){
-			for (YAML::const_iterator it=landmark_config["landmark"][b.Class].begin(); it!=landmark_config["landmark"][b.Class].end(); ++it)
-			{
-				for (size_t i = 0; i < B; i++)
-				{
-					particles[index].p_.x_ = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-					particles[index].p_.y_ = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
-					particles[index].p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
-					index++;
-				}
-			}
-		}
+		if (bbox.bounding_boxes.size() != 0){
+        for(auto observed_landmark : bbox.bounding_boxes){
+            for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
+                for (int i = 0; i <= B; i++){
+                    Pose p_;
+                    p_.x_ = l_->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+                    p_.y_ = l_->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+                    p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
+                    Particle P(p_.x_, p_.y_, p_.t_, 0);
+                    particles.push_back(P);
+                    particles.erase(particles.begin());
+                }
+            }
+        }
+    }
 	};
 	auto reset2 = [](std::vector<Particle>& particles,
 					 const Scan& scan,
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const int w_img,
-					 std::vector<DistWithConfig>& landmark_distance,
+					 std::vector<DistanceList>& map_list,
 					 const YAML::Node& landmark_config,
 					 double t){
-		std::vector<int> x_list;
-		for (const auto& b:bbox.bounding_boxes){
-			int x = (b.xmax + b.xmin) / 2;
-			x_list.push_back(x);
-		}
-		std::sort(x_list.begin(), x_list.end());
-
 		// ロボットから観測したランドマークまでの距離を計算
-		std::vector<std::pair<NameWithId, geometry_msgs::Point>> landmark_list;
-		int id = 0;
-		for (const auto& x:x_list){
-			for (const auto& b:bbox.bounding_boxes){
-				if ((b.xmax + b.xmin) / 2 == x){
-					NameWithId name_id;
-					geometry_msgs::Point point;
-					auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
-					auto tmp = yaw;
-					tmp += t;
-					if (yaw < 0) yaw += (M_PI * 2);
-					int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
-					double dist = scan.ranges_[i];
-					point.x = dist * std::cos(yaw);
-					point.y = dist * std::sin(yaw);
-					name_id.name = b.Class;
-					name_id.id = id;
-					name_id.dist = dist;
-					name_id.yaw = tmp;
-					landmark_list.push_back(std::make_pair(name_id, point));
-					id++;
-				}
-			}
+		std::vector<LandmarkInfo> observed_landmark;
+		unsigned int id = 0;
+		for (const auto& b:bbox.bounding_boxes){
+			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+			if (yaw < 0)
+				yaw += (M_PI * 2);
+			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
+			float dist = scan.ranges_[i];
+			LandmarkInfo observed_info;
+			observed_info.name = b.Class;
+			observed_info.id = id;
+			observed_info.point.x = dist * std::cos(yaw);
+			observed_info.point.y = dist * std::sin(yaw);
+			observed_info.yaw = yaw;
+			observed_landmark.push_back(observed_info);
+			id++;
 		}
 
 		// 各ランドマーク間の距離を計算
-		std::vector<DistWithConfig> observed_distance;
-		for (const auto& base:landmark_list){
-			DistWithConfig dc;
-			std::string base_name_id = base.first.name + std::to_string(base.first.id);
-			for (const auto& target:landmark_list){
-				std::string target_name_id = target.first.name + std::to_string(target.first.id);
-				if (target_name_id != base_name_id){
-					double dx = base.second.x - target.second.x;
-					double dy = base.second.y - target.second.y;
-					double dist = std::sqrt((dx * dx) + (dy * dy));
-					dc.target.push_back(std::make_pair(target.first, dist));
+		std::vector<DistanceList> observed_list;
+		for (auto& base:observed_landmark){
+			DistanceList dist_list;
+			base.dist = 0.0;
+			dist_list.base = base;
+			for (auto& target:observed_landmark){
+				if (target.name != base.name || target.id != base.id){
+					float dx = base.point.x - target.point.x;
+					float dy = base.point.y - target.point.y;
+					target.dist = std::sqrt((dx * dx) + (dy * dy));
+					dist_list.target.push_back(target);
 				}
 			}
-			dc.base = base.first;
-			observed_distance.push_back(dc);
+			observed_list.push_back(dist_list);
 		}
+		// for (const auto& a:observed_list){
+		// 	std::cout << a.base.name << a.base.id << std::endl;
+		// 	for (const auto& b:a.target){
+		// 		std::cout << " " << b.name << b.id << " " << b.dist << std::endl;
+		// 	}
+		// }
 
-		// 各ランドマーク間の距離情報からどのランドマークを観測しているか予測する
-		std::vector<std::vector<NameWithId>> prediction_list;
-		for (const auto& ob:observed_distance){
-			for (auto ld:landmark_distance){
-				if (ob.base.name == ld.base.name){
-					std::vector<NameWithId> result;
-					NameWithId b_name_id;
-					b_name_id.name = ld.base.name;
-					b_name_id.id = ld.base.id;
-					b_name_id.yaw = ob.base.yaw;
-					b_name_id.dist = ob.base.dist;
-					result.push_back(b_name_id);
-					for (const auto& ob_target:ob.target){
-						double min = std::numeric_limits<double>::max();
-						int index = 0, min_index = 0;
-						double yaw = 0, dist = 0;
-						for (const auto& ld_target:ld.target){
-							if (ob_target.first.name == ld_target.first.name){
-								double diff = std::abs(ob_target.second - ld_target.second);
-								if (diff < 0.5 && diff < min){
-									min_index = index;
-									min = std::min(diff, min);
-									yaw = ob_target.first.yaw;
-									dist = ob_target.first.dist;
+		// 各ランドマーク間の距離情報からどのランドマークを観測しているか予測
+		std::vector<LandmarkInfo> prediction_list;
+		for (const auto& observed:observed_list){
+			for (const auto& map:map_list){
+				unsigned int count = 0;
+				if (observed.base.name == map.base.name){
+					for (const auto& o_target:observed.target){
+						for (const auto& m_target:map.target){
+							if (o_target.name == m_target.name){
+								float diff = std::abs(o_target.dist - m_target.dist);
+								if (diff < 0.4){
+									count++;
+									break;
 								}
 							}
-							index++;
-						}
-						if (min != std::numeric_limits<double>::max()){
-							NameWithId t_name_id;
-							t_name_id.name = ld.target[min_index].first.name;
-							t_name_id.id = ld.target[min_index].first.id;
-							t_name_id.yaw = yaw;
-							t_name_id.dist = dist;
-							result.push_back(t_name_id);
-							ld.target.erase(ld.target.begin() + min_index);
 						}
 					}
-					if (result.size() - 1 > ob.target.size() * 0.6){
-						prediction_list.push_back(result);
-					}
 				}
+				std::cout << map.base.name << map.base.id << " count:" << count << std::endl;
 			}
 		}
-
-		// ロボットの座標を計算
-		std::vector<std::pair<std::string, int>> target_landmark;
-		for (const auto& p:prediction_list){
-			for (const auto& config:p){
-				std::pair<std::string, int> pair;
-				pair = std::make_pair(config.name, config.id);
-				auto itr = std::find(target_landmark.begin(), target_landmark.end(), pair);
-				if (itr == target_landmark.end()){
-					target_landmark.push_back(pair);
-				}
-			}
-		}
-		std::map<std::string, Eigen::Vector2d> point;
-		for (const auto& t:target_landmark){
-			std::string name_id = t.first + std::to_string(t.second);
-			Eigen::Vector2d vec;
-			vec(0) = landmark_config["landmark"][t.first]["id" + std::to_string(t.second)]["pose"][0].as<double>();
-			vec(1) = landmark_config["landmark"][t.first]["id" + std::to_string(t.second)]["pose"][1].as<double>();
-			point[name_id] = vec;
-		}
-		
-		int i = 0;
-		for (const auto& p:prediction_list){
-			for (const auto& config:p){
-				std::string name_id = config.name + std::to_string(config.id);
-				double x = point[name_id](0) + (config.dist * std::cos(config.yaw));
-				double y = point[name_id](1) + (config.dist * std::sin(config.yaw));
-				// std::cout << "x : " << x << " y :" << y << std::endl;
-				for (size_t j = 0; j < 10; j++){
-					particles[i].p_.x_ = x;
-					particles[i].p_.y_ = y;
-					i++;
-				}
-			}
-		}
-		
-		// for (const auto& p:prediction_list){
-		// 	std::string name_id1 = p[0].name + std::to_string(p[0].id);
-		// 	std::string name_id2 = p[1].name + std::to_string(p[1].id);
-		// 	Eigen::Matrix2d A;
-		// 	A(0, 0) = tan(p[0].yaw);
-		// 	A(0, 1) = -1;
-		// 	A(1, 0) = -1;
-		// 	A(1, 1) = tan(p[1].yaw);
-
-		// 	Eigen::Vector2d B;
-		// 	B(0) = tan(p[0].yaw * point[name_id1](0) - point[name_id1](1));
-		// 	B(1) = tan(p[1].yaw * point[name_id2](0) - point[name_id2](1));
-
-		// 	Eigen::Vector2d x = A.colPivHouseholderQr().solve(B);
-		// 	std::cout << "ans x: \n" << x << std::endl;
-		// }
 	};
 
 	if (bbox.bounding_boxes.empty()){
 		return;
 	}else if (bbox.bounding_boxes.size() == 1){
-		reset1(particles_, bbox, landmark_config, R_th, B);
+		// reset1(particles_, bbox, landmark_config, R_th, B);
 	}else{
 		// reset1(particles_, bbox, landmark_config, R_th, B);
-		reset2(particles_, scan, bbox, w_img, landmark_distance_, landmark_config, t);
+		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, t);
 	}
-	// if (!bbox.bounding_boxes.empty())
-	// 	reset2(particles_, scan, bbox, w_img, landmark_distance_, landmark_config);
 }
 
 }
