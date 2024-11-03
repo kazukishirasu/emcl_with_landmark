@@ -189,13 +189,11 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, double t)
 {
-	float particle_raito = 0.8;
 	srand((unsigned)time(NULL));
 	auto reset1 = [](std::vector<Particle>& particles,
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const YAML::Node& landmark_config,
-					 const double R_th, const int B,
-					 const float particle_raito){
+					 const double R_th, const int B){
 		if (bbox.bounding_boxes.size() != 0){
         for(auto observed_landmark : bbox.bounding_boxes){
             for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
@@ -218,23 +216,25 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					 const int w_img,
 					 std::vector<DistanceList>& map_list,
 					 const YAML::Node& landmark_config,
-					 const float particle_raito, double t){
+					 double t){
 		// ロボットから観測したランドマークまでの距離を計算
 		std::vector<LandmarkInfo> observed_landmark;
 		unsigned int id = 0;
 		for (const auto& b:bbox.bounding_boxes){
-			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
-			if (yaw < 0)
-				yaw += (M_PI * 2);
-			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
-			float dist = scan.ranges_[i];
 			LandmarkInfo observed_info;
 			observed_info.name = b.Class;
 			observed_info.id = id;
-			observed_info.point.x = dist * std::cos(yaw);
-			observed_info.point.y = dist * std::sin(yaw);
-			observed_info.dist = dist;
+			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+			if (yaw < 0)
+				yaw += (M_PI * 2);
 			observed_info.yaw = yaw;
+			yaw -= scan.angle_min_;
+			if (yaw > M_PI * 2)
+				yaw -= M_PI * 2;
+			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
+			observed_info.point.x = scan.ranges_[i] * std::cos((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
+			observed_info.point.y = scan.ranges_[i] * std::sin((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
+			observed_info.dist = scan.ranges_[i];
 			observed_landmark.push_back(observed_info);
 			id++;
 		}
@@ -266,7 +266,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						for (const auto& m_target:map.target){
 							if (o_target.name == m_target.name){
 								float diff = std::abs(o_target.dist - m_target.dist);
-								if (diff < 0.5){
+								if (diff < 0.3){
 									count++;
 									break;
 								}
@@ -274,11 +274,11 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						}
 					}
 				}
-				if (count >= 1){
+				if (count >= (observed_landmark.size() - 1) * 0.5){
 					map.base.probability = count;
 					dist_list.target.push_back(map.base);
+					sum += count;
 				}
-				sum += count;
 			}
 			// 観測したランドマークがマップ上のどのランドマークか確率を計算
 			for (auto& dl:dist_list.target){
@@ -291,16 +291,18 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// 	for (const auto& b:a.target){
 		// 		std::cout << " " << b.name << b.id << " probability:" << b.probability << std::endl;
 		// 	}
-		// }	
+		// }
 		// 予測結果からパーティクルを配置
-		int raito = particles.size() * particle_raito;
-		raito /= observed_landmark.size();
+		int  raito = particles.size() / observed_landmark.size();
 		for (const auto& predicted:prediction_list){
+			float x = predicted.base.dist * std::cos(predicted.base.yaw + M_PI + t);
+			float y = predicted.base.dist * std::sin(predicted.base.yaw + M_PI + t);
 			for (const auto& landmark:predicted.target){
 				for (size_t i = 0; i < raito * landmark.probability; i++){
 					Pose p_;
-					p_.x_ = landmark.point.x + (predicted.base.dist * std::cos(predicted.base.yaw + M_PI + t));
-					p_.y_ = landmark.point.y + (predicted.base.dist * std::sin(predicted.base.yaw + M_PI + t));
+					p_.x_ = landmark.point.x + x;
+					p_.y_ = landmark.point.y + y;
+					p_.t_ = predicted.base.yaw - t;
 					Particle P(p_.x_, p_.y_, p_.t_, 0);
 					particles.insert(particles.begin(), P);
 					particles.pop_back();
@@ -312,10 +314,9 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 	if (bbox.bounding_boxes.empty()){
 		return;
 	}else if (bbox.bounding_boxes.size() == 1){
-		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
+		reset1(particles_, bbox, landmark_config, R_th, B);
 	}else{
-		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
-		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, particle_raito, t);
+		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, t);
 	}
 }
 
