@@ -21,7 +21,7 @@ ExpResetMcl::ExpResetMcl(const Pose &p, int num, const Scan &scan,
 	  expansion_radius_position_(expansion_radius_position),
 	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map)
 {
-	calc_inv_det(landmark_config);
+	// calc_inv_det(landmark_config);
 	calc_distance(landmark_config);
 }
 
@@ -105,7 +105,7 @@ void ExpResetMcl::calc_distance(const YAML::Node& landmark_config)
 	}
 }
 
-void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
+void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double phi_th, const double R_th, const int B)
 {
 	if(processed_seq_ == scan_.seq_)
 		return;
@@ -157,7 +157,8 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 		}
 		normalizeBelief(particles_);
 		for (auto &p : vision_particles){
-			p.w_ *= p.vision_weight(map_.get(), scan, bbox, invdet_list_, w_img);
+			p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img);
+			// p.w_ *= p.vision_weight(scan, bbox, invdet_list_, w_img);
 		}
 		normalizeBelief(vision_particles);
 		for (size_t i = 0; i < particles_.size(); i++){
@@ -230,7 +231,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			observed_info.yaw = yaw;
 			yaw -= scan.angle_min_;
 			if (yaw > M_PI * 2)
-				yaw -= M_PI * 2;
+				yaw -= (M_PI * 2);
 			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
 			observed_info.point.x = scan.ranges_[i] * std::cos((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
 			observed_info.point.y = scan.ranges_[i] * std::sin((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
@@ -266,7 +267,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						for (const auto& m_target:map.target){
 							if (o_target.name == m_target.name){
 								float diff = std::abs(o_target.dist - m_target.dist);
-								if (diff < 0.3){
+								if (diff < 0.5){
 									count++;
 									break;
 								}
@@ -274,7 +275,8 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						}
 					}
 				}
-				if (count >= (observed_landmark.size() - 1) * 0.5){
+				// if (count >= (observed_landmark.size() - 1) * 0.6){
+				if (count >= 1){
 					map.base.probability = count;
 					dist_list.target.push_back(map.base);
 					sum += count;
@@ -293,19 +295,19 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// 	}
 		// }
 		// 予測結果からパーティクルを配置
-		int  raito = particles.size() / observed_landmark.size();
+		int raito = (particles.size() * 0.6) / observed_landmark.size();
 		for (const auto& predicted:prediction_list){
-			float x = predicted.base.dist * std::cos(predicted.base.yaw + M_PI + t);
-			float y = predicted.base.dist * std::sin(predicted.base.yaw + M_PI + t);
+			float x = predicted.base.dist * std::cos(predicted.base.yaw - M_PI + t);
+			float y = predicted.base.dist * std::sin(predicted.base.yaw - M_PI + t);
 			for (const auto& landmark:predicted.target){
 				for (size_t i = 0; i < raito * landmark.probability; i++){
 					Pose p_;
 					p_.x_ = landmark.point.x + x;
 					p_.y_ = landmark.point.y + y;
-					p_.t_ = predicted.base.yaw - t;
+					p_.t_ = t;
 					Particle P(p_.x_, p_.y_, p_.t_, 0);
-					particles.insert(particles.begin(), P);
-					particles.pop_back();
+					particles.push_back(P);
+                    particles.erase(particles.begin());
 				}
 			}
 		}

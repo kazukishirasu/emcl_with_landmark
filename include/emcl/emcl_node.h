@@ -59,7 +59,7 @@ private:
 	yolov5_pytorch_ros::BoundingBoxes bbox_;
 	YAML::Node landmark_config_;
 	int w_img_, B_;
-	double ratio_, R_th_;
+	double ratio_, phi_th_, R_th_;
 
 	void publishPose(double x, double y, double t,
 			double x_dev, double y_dev, double t_dev,

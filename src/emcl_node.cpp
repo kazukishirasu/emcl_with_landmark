@@ -78,6 +78,7 @@ void EMclNode::initPF(void)
 	int w_img;
 	private_nh_.param("ImageWide", w_img_, 1280);
 	private_nh_.param("weight_ratio", ratio_, 0.5);
+	private_nh_.param("phi_th", phi_th_, 0.26);
 	private_nh_.param("R_th", R_th_, 20.0);
     private_nh_.param("B", B_, 1);
 
@@ -162,7 +163,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, t, inv, bbox_, landmark_config_, w_img_, ratio_, R_th_, B_);
+	pf_->sensorUpdate(lx, ly, lt, t, inv, bbox_, landmark_config_, w_img_, ratio_, phi_th_, R_th_, B_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;

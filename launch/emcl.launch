@@ -6,6 +6,7 @@
   <arg name="initial_pose_a"      default="0.0"/>
   <arg name="landmark_file_path"  default="$(find emcl)/landmark_list.yaml"/>
   <arg name="weight_ratio"        default="0.5"/> <!-- 0.0~1.0 -->
+  <arg name="phi_th"              default="0.26"/>
   <arg name="R_th"                default="20.0"/>
   <arg name="B"                   default="1"/>
 
@@ -33,8 +34,8 @@
     <param name="alpha_threshold"               value="0.4"/>
     <param name="open_space_threshold"          value="0.05"/>
 
-    <param name="expansion_radius_position"     value="0.8"/>
-    <param name="expansion_radius_orientation"  value="1.57"/>
+    <param name="expansion_radius_position"     value="1.0"/>
+    <param name="expansion_radius_orientation"  value="0.524"/>
 
     <remap from="scan"                          to="$(arg scan_topic)"/>
     <param name="laser_min_range"               value="0.0"/>
@@ -42,6 +43,7 @@
     
     <param name="landmark_file_path"            value="$(arg landmark_file_path)"/>
     <param name="ratio"                         value="$(arg weight_ratio)"/>
+    <param name="phi_th"                        value="$(arg phi_th)"/>
     <param name="R_th"                          value="$(arg R_th)"/>
     <param name="B"                             value="$(arg B)"/>
     
