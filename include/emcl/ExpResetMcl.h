@@ -48,6 +48,7 @@ private:
 		geometry_msgs::Point point;
 		float dist;
 		float yaw;
+		float probability;
 	};
 	// baseのランドマークからtargetのランドマークまでの距離を格納
 	struct DistanceList{

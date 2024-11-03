@@ -103,12 +103,6 @@ void ExpResetMcl::calc_distance(const YAML::Node& landmark_config)
 			base_id++;
 		}
 	}
-	// for (const auto& a:map_list_){
-	// 	std::cout << a.base.name << a.base.id << std::endl;
-	// 	for (const auto& b:a.target){
-	// 		std::cout << " " << b.name << b.id << " " << b.dist << std::endl;
-	// 	}
-	// }
 }
 
 void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double R_th, const int B)
@@ -195,11 +189,13 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, double t)
 {
+	int particle_ratio = particles_.size() * 0.5;
 	srand((unsigned)time(NULL));
 	auto reset1 = [](std::vector<Particle>& particles,
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const YAML::Node& landmark_config,
-					 const double R_th, const int B){
+					 const double R_th, const int B,
+					 const int particle_ratio){
 		if (bbox.bounding_boxes.size() != 0){
         for(auto observed_landmark : bbox.bounding_boxes){
             for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
@@ -222,7 +218,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					 const int w_img,
 					 std::vector<DistanceList>& map_list,
 					 const YAML::Node& landmark_config,
-					 double t){
+					 const int particle_ratio, double t){
 		// ロボットから観測したランドマークまでの距離を計算
 		std::vector<LandmarkInfo> observed_landmark;
 		unsigned int id = 0;
@@ -241,7 +237,6 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			observed_landmark.push_back(observed_info);
 			id++;
 		}
-
 		// 各ランドマーク間の距離を計算
 		std::vector<DistanceList> observed_list;
 		for (auto& base:observed_landmark){
@@ -258,17 +253,13 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			}
 			observed_list.push_back(dist_list);
 		}
-		// for (const auto& a:observed_list){
-		// 	std::cout << a.base.name << a.base.id << std::endl;
-		// 	for (const auto& b:a.target){
-		// 		std::cout << " " << b.name << b.id << " " << b.dist << std::endl;
-		// 	}
-		// }
-
 		// 各ランドマーク間の距離情報からどのランドマークを観測しているか予測
-		std::vector<LandmarkInfo> prediction_list;
+		std::vector<DistanceList> prediction_list;
 		for (const auto& observed:observed_list){
-			for (const auto& map:map_list){
+			DistanceList dist_list;
+			dist_list.base = observed.base;
+			unsigned int sum = 0;
+			for (auto& map:map_list){
 				unsigned int count = 0;
 				if (observed.base.name == map.base.name){
 					for (const auto& o_target:observed.target){
@@ -283,18 +274,27 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						}
 					}
 				}
-				std::cout << map.base.name << map.base.id << " count:" << count << std::endl;
+				if (count >= 1){
+					map.base.probability = count;
+					dist_list.target.push_back(map.base);
+				}
+				sum += count;
 			}
+			// 観測したランドマークがマップ上のどのランドマークか確率を計算
+			for (auto& dl:dist_list.target){
+				dl.probability /= (float)sum;
+			}
+			prediction_list.push_back(dist_list);
 		}
 	};
 
 	if (bbox.bounding_boxes.empty()){
 		return;
 	}else if (bbox.bounding_boxes.size() == 1){
-		// reset1(particles_, bbox, landmark_config, R_th, B);
+		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
 	}else{
-		// reset1(particles_, bbox, landmark_config, R_th, B);
-		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, t);
+		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
+		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, particle_ratio, t);
 	}
 }
 
