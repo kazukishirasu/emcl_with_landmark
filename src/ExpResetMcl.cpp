@@ -164,7 +164,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
+	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -189,13 +189,13 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, double t)
 {
-	int particle_ratio = particles_.size() * 0.5;
+	float particle_raito = 0.8;
 	srand((unsigned)time(NULL));
 	auto reset1 = [](std::vector<Particle>& particles,
 					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
 					 const YAML::Node& landmark_config,
 					 const double R_th, const int B,
-					 const int particle_ratio){
+					 const float particle_raito){
 		if (bbox.bounding_boxes.size() != 0){
         for(auto observed_landmark : bbox.bounding_boxes){
             for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
@@ -218,7 +218,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					 const int w_img,
 					 std::vector<DistanceList>& map_list,
 					 const YAML::Node& landmark_config,
-					 const int particle_ratio, double t){
+					 const float particle_raito, double t){
 		// ロボットから観測したランドマークまでの距離を計算
 		std::vector<LandmarkInfo> observed_landmark;
 		unsigned int id = 0;
@@ -233,6 +233,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			observed_info.id = id;
 			observed_info.point.x = dist * std::cos(yaw);
 			observed_info.point.y = dist * std::sin(yaw);
+			observed_info.dist = dist;
 			observed_info.yaw = yaw;
 			observed_landmark.push_back(observed_info);
 			id++;
@@ -241,9 +242,8 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		std::vector<DistanceList> observed_list;
 		for (auto& base:observed_landmark){
 			DistanceList dist_list;
-			base.dist = 0.0;
 			dist_list.base = base;
-			for (auto& target:observed_landmark){
+			for (auto target:observed_landmark){
 				if (target.name != base.name || target.id != base.id){
 					float dx = base.point.x - target.point.x;
 					float dy = base.point.y - target.point.y;
@@ -266,7 +266,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 						for (const auto& m_target:map.target){
 							if (o_target.name == m_target.name){
 								float diff = std::abs(o_target.dist - m_target.dist);
-								if (diff < 0.4){
+								if (diff < 0.5){
 									count++;
 									break;
 								}
@@ -286,6 +286,27 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			}
 			prediction_list.push_back(dist_list);
 		}
+		// for (const auto& a:prediction_list){
+		// 	std::cout << "observed_landmark " << a.base.name << a.base.id << std::endl;
+		// 	for (const auto& b:a.target){
+		// 		std::cout << " " << b.name << b.id << " probability:" << b.probability << std::endl;
+		// 	}
+		// }	
+		// 予測結果からパーティクルを配置
+		int raito = particles.size() * particle_raito;
+		raito /= observed_landmark.size();
+		for (const auto& predicted:prediction_list){
+			for (const auto& landmark:predicted.target){
+				for (size_t i = 0; i < raito * landmark.probability; i++){
+					Pose p_;
+					p_.x_ = landmark.point.x + (predicted.base.dist * std::cos(predicted.base.yaw + M_PI + t));
+					p_.y_ = landmark.point.y + (predicted.base.dist * std::sin(predicted.base.yaw + M_PI + t));
+					Particle P(p_.x_, p_.y_, p_.t_, 0);
+					particles.insert(particles.begin(), P);
+					particles.pop_back();
+				}
+			}
+		}
 	};
 
 	if (bbox.bounding_boxes.empty()){
@@ -294,7 +315,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
 	}else{
 		// reset1(particles_, bbox, landmark_config, R_th, B, particle_ratio);
-		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, particle_ratio, t);
+		reset2(particles_, scan, bbox, w_img, map_list_, landmark_config, particle_raito, t);
 	}
 }
 
