@@ -18,7 +18,7 @@
     <param name="num_particles"                 value="500"/>
 
     <param name="odom_frame_id"                 value="odom"/>
-    <param name="footprint_frame_id"            value="base_footprint"/>
+    <param name="footprint_frame_id"            value="base_link"/>
     <param name="base_frame_id"                 value="base_link"/>
 
     <param name="initial_pose_x"                value="$(arg initial_pose_x)"/>
@@ -35,7 +35,7 @@
     <param name="alpha_threshold"               value="0.4"/>
     <param name="open_space_threshold"          value="0.05"/>
 
-    <param name="expansion_radius_position"     value="4.0"/>
+    <param name="expansion_radius_position"     value="5.0"/>
     <param name="expansion_radius_orientation"  value="3.14"/>
 
     <remap from="scan"                          to="$(arg scan_topic)"/>
