@@ -26,36 +26,20 @@ public:
 					  const YAML::Node& landmark_config,
 					  const int w_img, const double ratio,
 					  const double phi_th, const double R_th, const int B);
+	void build_kd_tree(const YAML::Node& landmark_config);
 private:
 	double alpha_threshold_;
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
-	std::vector<Particle::InvDet> invdet_list_;
+	kd_tree kdt;
+	std::vector<std::pair<std::string, std::shared_ptr<kd_tree::KdNode>>> tree_list_;
 
-	void calc_inv_det(const YAML::Node& landmark_config);
-	void calc_distance(const YAML::Node& landmark_config);
 	void expansionReset(void);
 	void vision_sensorReset(const Scan& scan,
 							const yolov5_pytorch_ros::BoundingBoxes& bbox,
 							const YAML::Node& landmark_config, const int w_img,
 							const double R_th, const int B, double t);
-
-	// ランドマーク情報
-	struct LandmarkInfo{
-		std::string name;
-		unsigned int id;
-		geometry_msgs::Point point;
-		float dist;
-		float yaw;
-		float probability;
-	};
-	// baseのランドマークからtargetのランドマークまでの距離を格納
-	struct DistanceList{
-		LandmarkInfo base;
-		std::vector<LandmarkInfo> target;
-	};
-	std::vector<DistanceList> map_list_;
 };
 
 }

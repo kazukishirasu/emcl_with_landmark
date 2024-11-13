@@ -72,44 +72,6 @@ double Particle::vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, co
     return ans;
 }
 
-// double Particle::vision_weight(Scan &scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<InvDet>& invdet_list, const int w_img)
-// {
-// 	if (bbox.bounding_boxes.empty()){
-// 		return 0.0;
-// 	}
-// 	uint16_t t = p_.get16bitRepresentation();
-// 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
-// 				- scan.lidar_pose_y_*Mcl::sin_[t];
-// 	double lidar_y = p_.y_ + scan.lidar_pose_x_*Mcl::sin_[t] 
-// 				+ scan.lidar_pose_y_*Mcl::cos_[t];
-// 	uint16_t lidar_yaw = Pose::get16bitRepresentation(scan.lidar_pose_yaw_);
-
-// 	double ans = 0, max = 0;
-// 	for (const auto& b:bbox.bounding_boxes){
-// 		auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
-// 		if (yaw < 0)
-// 			yaw += (M_PI * 2);
-// 		int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
-// 		uint16_t a = scan.directions_16bit_[i] + t + lidar_yaw;
-// 		Eigen::Vector2d observation_point;
-// 		observation_point(0) = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
-// 		observation_point(1) = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
-// 		for (const auto& invdet:invdet_list){
-// 			if (invdet.name == b.Class){
-// 				for (size_t i = 0; i < invdet.mean.size(); i++){
-// 					Eigen::Vector2d diff = observation_point - invdet.mean[i];
-// 					double exponent = std::exp(-0.5 * diff.transpose() * invdet.inv[i] * diff);
-// 					double likelihood = (1 / ((2 * M_PI) * std::sqrt(invdet.det[i]))) * exponent;
-// 					max = std::max(max, likelihood);
-// 				}
-// 				ans += max;
-// 			}
-// 		}
-// 	}
-// 	ans /= bbox.bounding_boxes.size();
-// 	return ans;
-// }
-
 bool Particle::wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace)
 {
 	uint16_t t = p_.get16bitRepresentation();

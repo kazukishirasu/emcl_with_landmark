@@ -11,6 +11,7 @@
 #include "emcl/Particle.h"
 #include "emcl/OdomModel.h"
 #include "emcl/LikelihoodFieldMap.h"
+#include "emcl/kd_tree.h"
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "sensor_msgs/LaserScan.h"
