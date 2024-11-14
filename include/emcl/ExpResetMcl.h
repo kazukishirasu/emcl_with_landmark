@@ -32,8 +32,8 @@ private:
 	double open_space_threshold_;
 	double expansion_radius_position_;
 	double expansion_radius_orientation_;
-	kd_tree kdt;
-	std::vector<std::pair<std::string, std::shared_ptr<kd_tree::KdNode>>> tree_list_;
+	KD_Tree kdt;
+	std::vector<ICP_Matching::Tree> tree_list_;
 
 	void expansionReset(void);
 	void vision_sensorReset(const Scan& scan,

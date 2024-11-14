@@ -1,15 +1,15 @@
 #include "emcl/kd_tree.h"
 
 namespace emcl{   
-    kd_tree::kd_tree()
+    KD_Tree::KD_Tree()
     {
     }
 
-    kd_tree::~kd_tree()
+    KD_Tree::~KD_Tree()
     {
     }
 
-    std::shared_ptr<kd_tree::KdNode> kd_tree::build_kd_tree(std::vector<Point> &points, int depth = 0)
+    std::shared_ptr<KD_Tree::KdNode> KD_Tree::build_kd_tree(std::vector<Point> &points, int depth = 0)
     {
         if (points.empty())
             return nullptr;
@@ -29,7 +29,7 @@ namespace emcl{
         return node;
     }
 
-    void kd_tree::search(const std::shared_ptr<KdNode>& node, const Point& target, Point& best_point, double& best_dist, int depth = 0)
+    void KD_Tree::search(const std::shared_ptr<KdNode>& node, const Point& target, Point& best_point, double& best_dist, int depth = 0)
     {
         if (node == nullptr)
             return;

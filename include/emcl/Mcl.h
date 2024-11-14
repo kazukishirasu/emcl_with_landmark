@@ -12,6 +12,7 @@
 #include "emcl/OdomModel.h"
 #include "emcl/LikelihoodFieldMap.h"
 #include "emcl/kd_tree.h"
+#include "emcl/icp_matching.h"
 
 #include "nav_msgs/OccupancyGrid.h"
 #include "sensor_msgs/LaserScan.h"

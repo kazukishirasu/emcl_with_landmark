@@ -1,6 +1,7 @@
 #ifndef KDTREE_H__
 #define KDTREE_H__
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -8,7 +9,7 @@
 
 namespace emcl{
 
-class kd_tree
+class KD_Tree
 {
 public:
     struct Point {
@@ -21,8 +22,8 @@ public:
         KdNode(const Point &point) : point(point), left(nullptr), right(nullptr) {}
     };
 
-    kd_tree();
-    ~kd_tree();
+    KD_Tree();
+    ~KD_Tree();
     std::shared_ptr<KdNode> build_kd_tree(std::vector<Point>&, int);
     void search(const std::shared_ptr<KdNode>&, const Point&, Point&, double&, int);
 private:

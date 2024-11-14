@@ -33,6 +33,7 @@ add_library(Pose src/Pose.cpp)
 add_library(Scan src/Scan.cpp)
 add_library(LikelihoodFieldMap src/LikelihoodFieldMap.cpp)
 add_library(kd_tree src/kd_tree.cpp)
+add_library(icp_matching src/icp_matching.cpp)
 
 add_executable(mcl_node src/mcl_node.cpp)
 add_executable(emcl_node src/emcl_node.cpp)
@@ -42,5 +43,5 @@ add_dependencies(emcl_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED
 
 # target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap ${catkin_LIBRARIES})
 # target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap ${catkin_LIBRARIES})
-target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp kd_tree ${catkin_LIBRARIES})
-target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp kd_tree ${catkin_LIBRARIES})
+target_link_libraries(mcl_node Mcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp kd_tree icp_matching ${catkin_LIBRARIES})
+target_link_libraries(emcl_node Mcl ExpResetMcl Particle Pose Scan OdomModel LikelihoodFieldMap yaml-cpp kd_tree icp_matching ${catkin_LIBRARIES})

@@ -30,19 +30,21 @@ ExpResetMcl::~ExpResetMcl()
 
 void ExpResetMcl::build_kd_tree(const YAML::Node& landmark_config)
 {
+	ICP_Matching::Tree tree;
 	YAML::Node landmark = landmark_config["landmark"];
-	for (YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it){
-		std::string name = it->first.as<std::string>();
+	for (YAML::const_iterator itr=landmark.begin(); itr!=landmark.end(); ++itr){
+		std::string name = itr->first.as<std::string>();
+		tree.name = name;
 		YAML::Node config = landmark[name];
-		std::vector<kd_tree::Point> points;
+		std::vector<KD_Tree::Point> points;
 		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
-			kd_tree::Point point;
+			KD_Tree::Point point;
 			point.x = it->second["pose"][0].as<double>();
 			point.y = it->second["pose"][1].as<double>();
 			points.push_back(point);
 		}
-		std::shared_ptr<kd_tree::KdNode> node = kdt.build_kd_tree(points, 0);
-		tree_list_.push_back(std::make_pair(name, node));
+		tree.node = kdt.build_kd_tree(points, 0);
+		tree_list_.push_back(tree);
 	}
 	return;
 }
@@ -146,19 +148,11 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
             }
     	}
 	};
-	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles){
-		struct Landmark{
-			std::string name;
-			std::vector<kd_tree::Point> points;
-		};
-		struct Data{
-			kd_tree::Point robot_pose;
-			std::vector<Landmark> landmarks;
-		};
+	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
 		// ロボットと観測したランドマークとの相対座標を計算
-		std::vector<Landmark> observed_list;
+		std::vector<ICP_Matching::Landmark> observed_list;
 		for(const auto& b : bbox.bounding_boxes){
-			kd_tree::Point point;
+			KD_Tree::Point point;
 			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
 			if (yaw < 0)
 				yaw += (M_PI * 2);
@@ -182,14 +176,13 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				}
 			}
 			if (!find){
-				Landmark landmark;
+				ICP_Matching::Landmark landmark;
 				landmark.name = b.Class;
 				landmark.points.push_back(point);
 				observed_list.push_back(landmark);
 			}
     	}
-
-		// debug
+		// デバッグ
 		// std::cout << observed_list.size() << std::endl;
 		// for (const auto& a:observed_list){
 		// 	std::cout << a.name << std::endl;
@@ -198,13 +191,16 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// 	}
 		// }
 
-		// ランドマーク周辺のランダムな初期位置を計算
-		std::vector<Data> data_list;
-		for (const auto& landmark : observed_list){
-			for(YAML::const_iterator l = landmark_config["landmark"][landmark.name].begin(); l!= landmark_config["landmark"][landmark.name].end(); ++l){
-				Data data;
-				data.robot_pose.x = l->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-				data.robot_pose.y = l->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+		// ランドマーク周辺のランダムな位置を初期位置として設定
+		std::vector<ICP_Matching::Data> data_list;
+		YAML::Node landmark = landmark_config["landmark"];
+		for (YAML::const_iterator itr=landmark.begin(); itr!=landmark.end(); ++itr){
+			std::string name = itr->first.as<std::string>();
+			YAML::Node config = landmark[name];
+			for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
+				ICP_Matching::Data data;
+				data.robot_pose.x = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+				data.robot_pose.y = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
 				data.robot_pose.t = 2 * M_PI * rand() / RAND_MAX - M_PI;
 				Eigen::Matrix2d rotation_matrix;
 				rotation_matrix(0, 0) = std::cos(data.robot_pose.t);
@@ -212,14 +208,14 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				rotation_matrix(1, 0) = std::sin(data.robot_pose.t);
 				rotation_matrix(1, 1) = std::cos(data.robot_pose.t);
 				for (const auto& observed : observed_list){
-					Landmark landmark;
+					ICP_Matching::Landmark landmark;
 					landmark.name = observed.name;
 					for (const auto& observed_point : observed.points){
 						Eigen::Vector2d point;
 						point(0) = observed_point.x;
 						point(1) = observed_point.y;
 						point = rotation_matrix * point;
-						kd_tree::Point transformed_point;
+						KD_Tree::Point transformed_point;
 						transformed_point.x = point(0) + data.robot_pose.x;
 						transformed_point.y = point(1) + data.robot_pose.y;
 						landmark.points.push_back(transformed_point);
@@ -229,8 +225,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				data_list.push_back(data);
 			}
 		}
-
-		// debug
+		// デバッグ
 		// std::cout << data_list.size() << std::endl;
 		// for (const auto& a:data_list){
 		// 	for (const auto& b:a.landmarks){
@@ -241,6 +236,12 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		// 	}
 		// 	std::cout << "-----" << std::endl;
 		// }
+
+		ICP_Matching icp;
+		for (auto& data : data_list){
+			icp.matching(tree_list, data, bbox.bounding_boxes.size());
+			std::cout << "-----" << std::endl;
+		}
 	};
 
 	if (bbox.bounding_boxes.empty()){
@@ -248,7 +249,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 	}else if (bbox.bounding_boxes.size() == 1){
 		reset1(particles_);
 	}else{
-		reset2(particles_);
+		reset2(particles_, kdt, tree_list_);
 	}
 }
 
