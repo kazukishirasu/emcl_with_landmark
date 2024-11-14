@@ -91,7 +91,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
-		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
+		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 		expansionReset();
 		std::vector<Particle> vision_particles = particles_;
 		for (auto &p : particles_){
@@ -106,7 +106,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t);
+	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -129,38 +129,126 @@ void ExpResetMcl::expansionReset(void)
 	}
 }
 
-void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, double t)
+void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, const double robot_t, const double lidar_t)
 {
-	srand((unsigned)time(NULL));
-	auto reset1 = [](std::vector<Particle>& particles,
-					 const yolov5_pytorch_ros::BoundingBoxes& bbox,
-					 const YAML::Node& landmark_config,
-					 const double R_th, const int B){
-		if (bbox.bounding_boxes.size() != 0){
-        for(auto observed_landmark : bbox.bounding_boxes){
-            for(YAML::const_iterator l_ = landmark_config["landmark"][observed_landmark.Class].begin(); l_!= landmark_config["landmark"][observed_landmark.Class].end(); ++l_){
+	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles){
+        for(const auto& b : bbox.bounding_boxes){
+            for(YAML::const_iterator l = landmark_config["landmark"][b.Class].begin(); l!= landmark_config["landmark"][b.Class].end(); ++l){
                 for (int i = 0; i <= B; i++){
                     Pose p_;
-                    p_.x_ = l_->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-                    p_.y_ = l_->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+                    p_.x_ = l->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+                    p_.y_ = l->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
                     p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
                     Particle P(p_.x_, p_.y_, p_.t_, 0);
                     particles.push_back(P);
                     particles.erase(particles.begin());
                 }
             }
-        }
-    }
+    	}
 	};
-	auto reset2 = [](){
+	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles){
+		struct Landmark{
+			std::string name;
+			std::vector<kd_tree::Point> points;
+		};
+		struct Data{
+			kd_tree::Point robot_pose;
+			std::vector<Landmark> landmarks;
+		};
+		// ロボットと観測したランドマークとの相対座標を計算
+		std::vector<Landmark> observed_list;
+		for(const auto& b : bbox.bounding_boxes){
+			kd_tree::Point point;
+			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+			if (yaw < 0)
+				yaw += (M_PI * 2);
+			yaw -= scan.angle_min_;
+			if (yaw > M_PI * 2)
+				yaw -= (M_PI * 2);
+			yaw -= lidar_t;
+			if (yaw > M_PI * 2){
+				yaw -= M_PI * 2;
+			}else if (yaw < 0){
+				yaw += M_PI * 2;
+			}
+			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
+			point.x = scan.ranges_[i] * std::cos((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
+			point.y = scan.ranges_[i] * std::sin((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
+			bool find = false;
+			for (auto& observed : observed_list){
+				if (b.Class == observed.name){
+					observed.points.push_back(point);
+					find = true;
+				}
+			}
+			if (!find){
+				Landmark landmark;
+				landmark.name = b.Class;
+				landmark.points.push_back(point);
+				observed_list.push_back(landmark);
+			}
+    	}
+
+		// debug
+		// std::cout << observed_list.size() << std::endl;
+		// for (const auto& a:observed_list){
+		// 	std::cout << a.name << std::endl;
+		// 	for (const auto& b:a.points){
+		// 		std::cout << " " << b.x << "	" << b.y << std::endl;
+		// 	}
+		// }
+
+		// ランドマーク周辺のランダムな初期位置を計算
+		std::vector<Data> data_list;
+		for (const auto& landmark : observed_list){
+			for(YAML::const_iterator l = landmark_config["landmark"][landmark.name].begin(); l!= landmark_config["landmark"][landmark.name].end(); ++l){
+				Data data;
+				data.robot_pose.x = l->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+				data.robot_pose.y = l->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+				data.robot_pose.t = 2 * M_PI * rand() / RAND_MAX - M_PI;
+				Eigen::Matrix2d rotation_matrix;
+				rotation_matrix(0, 0) = std::cos(data.robot_pose.t);
+				rotation_matrix(0, 1) = -std::sin(data.robot_pose.t);
+				rotation_matrix(1, 0) = std::sin(data.robot_pose.t);
+				rotation_matrix(1, 1) = std::cos(data.robot_pose.t);
+				for (const auto& observed : observed_list){
+					Landmark landmark;
+					landmark.name = observed.name;
+					for (const auto& observed_point : observed.points){
+						Eigen::Vector2d point;
+						point(0) = observed_point.x;
+						point(1) = observed_point.y;
+						point = rotation_matrix * point;
+						kd_tree::Point transformed_point;
+						transformed_point.x = point(0) + data.robot_pose.x;
+						transformed_point.y = point(1) + data.robot_pose.y;
+						landmark.points.push_back(transformed_point);
+					}
+					data.landmarks.push_back(landmark);
+				}
+				data_list.push_back(data);
+			}
+		}
+
+		// debug
+		// std::cout << data_list.size() << std::endl;
+		// for (const auto& a:data_list){
+		// 	for (const auto& b:a.landmarks){
+		// 		std::cout << b.name << std::endl;
+		// 		for (const auto& c:b.points){
+		// 			std::cout << " " << c.x << "	" << c.y << std::endl;
+		// 		}
+		// 	}
+		// 	std::cout << "-----" << std::endl;
+		// }
 	};
 
 	if (bbox.bounding_boxes.empty()){
 		return;
 	}else if (bbox.bounding_boxes.size() == 1){
-		reset1(particles_, bbox, landmark_config, R_th, B);
+		reset1(particles_);
 	}else{
-		reset2();
+		reset2(particles_);
 	}
 }
 

@@ -12,8 +12,8 @@ class kd_tree
 {
 public:
     struct Point {
-        double x, y;
-        Point(double x = 0, double y = 0) : x(x), y(y) {}
+        double x, y, t;
+        Point(double x = 0, double y = 0, double t = 0) : x(x), y(y), t(t) {}
     };
     struct KdNode {
         Point point;
