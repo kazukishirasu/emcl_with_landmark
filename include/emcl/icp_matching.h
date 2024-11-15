@@ -22,8 +22,8 @@ public:
 		std::vector<Landmark> landmarks;
     };
     struct Pair{
-        Eigen::MatrixX2d target;
-        Eigen::MatrixX2d source;
+        Eigen::MatrixX2d fix;
+        Eigen::MatrixX2d move;
     };
 
     ICP_Matching();

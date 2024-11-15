@@ -108,7 +108,7 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
 		}
 	}
-	vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
+	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
@@ -133,6 +133,7 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, const double robot_t, const double lidar_t)
 {
+	srand((unsigned)time(NULL));
 	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles){
         for(const auto& b : bbox.bounding_boxes){
             for(YAML::const_iterator l = landmark_config["landmark"][b.Class].begin(); l!= landmark_config["landmark"][b.Class].end(); ++l){
@@ -182,15 +183,6 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				observed_list.push_back(landmark);
 			}
     	}
-		// デバッグ
-		// std::cout << observed_list.size() << std::endl;
-		// for (const auto& a:observed_list){
-		// 	std::cout << a.name << std::endl;
-		// 	for (const auto& b:a.points){
-		// 		std::cout << " " << b.x << "	" << b.y << std::endl;
-		// 	}
-		// }
-
 		// ランドマーク周辺のランダムな位置を初期位置として設定
 		std::vector<ICP_Matching::Data> data_list;
 		YAML::Node landmark = landmark_config["landmark"];
@@ -225,22 +217,20 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				data_list.push_back(data);
 			}
 		}
-		// デバッグ
-		// std::cout << data_list.size() << std::endl;
-		// for (const auto& a:data_list){
-		// 	for (const auto& b:a.landmarks){
-		// 		std::cout << b.name << std::endl;
-		// 		for (const auto& c:b.points){
-		// 			std::cout << " " << c.x << "	" << c.y << std::endl;
-		// 		}
-		// 	}
-		// 	std::cout << "-----" << std::endl;
-		// }
-
 		ICP_Matching icp;
 		for (auto& data : data_list){
 			icp.matching(tree_list, data, bbox.bounding_boxes.size());
-			std::cout << "-----" << std::endl;
+		}
+		for (const auto& data : data_list){
+			for (size_t i = 0; i < 10; i++){
+				Pose p;
+				p.x_ = data.robot_pose.x;
+				p.y_ = data.robot_pose.y;
+				p.t_ = robot_t;
+				Particle P(p.x_, p.y_, p.t_, 0);
+				particles.push_back(P);
+				particles.erase(particles.begin());
+			}
 		}
 	};
 
