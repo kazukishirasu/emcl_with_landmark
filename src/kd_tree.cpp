@@ -34,11 +34,11 @@ namespace emcl{
         if (node == nullptr)
             return;
         
-        auto distance = [&](const Point a, const Point b){
+        auto squared_dist = [&](const Point a, const Point b){
             return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
         };
 
-        double dist = distance(node->point, target);
+        double dist = squared_dist(node->point, target);
         if (dist < best_dist){
             best_dist = dist;
             best_point = node->point;

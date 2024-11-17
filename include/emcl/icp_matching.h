@@ -28,7 +28,9 @@ public:
 
     ICP_Matching();
     ~ICP_Matching();
-    void matching(const std::vector<Tree>& tree_list, Data& data, size_t size);
+    bool matching(const std::vector<Tree>& tree_list, Data& data, size_t size);
+    double squared_dist(const Eigen::Vector2d& current_pose, const Eigen::Vector2d& update_pose);
+    double squared_dist(const KD_Tree::Point& point, const KD_Tree::Point& best_point);
 private:
     KD_Tree kdt;
 };

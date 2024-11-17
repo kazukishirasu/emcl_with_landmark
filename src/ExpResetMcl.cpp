@@ -133,9 +133,9 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, const double robot_t, const double lidar_t)
 {
-	srand((unsigned)time(NULL));
 	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles){
-        for(const auto& b : bbox.bounding_boxes){
+        srand((unsigned)time(NULL));
+		for(const auto& b : bbox.bounding_boxes){
             for(YAML::const_iterator l = landmark_config["landmark"][b.Class].begin(); l!= landmark_config["landmark"][b.Class].end(); ++l){
                 for (int i = 0; i <= B; i++){
                     Pose p_;
@@ -150,6 +150,7 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
     	}
 	};
 	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
+		srand((unsigned)time(NULL));
 		// ロボットと観測したランドマークとの相対座標を計算
 		std::vector<ICP_Matching::Landmark> observed_list;
 		for(const auto& b : bbox.bounding_boxes){
@@ -190,39 +191,50 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			std::string name = itr->first.as<std::string>();
 			YAML::Node config = landmark[name];
 			for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
-				ICP_Matching::Data data;
-				data.robot_pose.x = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-				data.robot_pose.y = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
-				data.robot_pose.t = 2 * M_PI * rand() / RAND_MAX - M_PI;
-				Eigen::Matrix2d rotation_matrix;
-				rotation_matrix(0, 0) = std::cos(data.robot_pose.t);
-				rotation_matrix(0, 1) = -std::sin(data.robot_pose.t);
-				rotation_matrix(1, 0) = std::sin(data.robot_pose.t);
-				rotation_matrix(1, 1) = std::cos(data.robot_pose.t);
-				for (const auto& observed : observed_list){
-					ICP_Matching::Landmark landmark;
-					landmark.name = observed.name;
-					for (const auto& observed_point : observed.points){
-						Eigen::Vector2d point;
-						point(0) = observed_point.x;
-						point(1) = observed_point.y;
-						point = rotation_matrix * point;
-						KD_Tree::Point transformed_point;
-						transformed_point.x = point(0) + data.robot_pose.x;
-						transformed_point.y = point(1) + data.robot_pose.y;
-						landmark.points.push_back(transformed_point);
+				for (size_t i = 0; i < B; i++){
+					ICP_Matching::Data data;
+					data.robot_pose.x = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
+					data.robot_pose.y = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+					data.robot_pose.t = 2 * M_PI * rand() / RAND_MAX - M_PI;
+					Eigen::Matrix2d rotation_matrix;
+					rotation_matrix(0, 0) = std::cos(data.robot_pose.t);
+					rotation_matrix(0, 1) = -std::sin(data.robot_pose.t);
+					rotation_matrix(1, 0) = std::sin(data.robot_pose.t);
+					rotation_matrix(1, 1) = std::cos(data.robot_pose.t);
+					for (const auto& observed : observed_list){
+						ICP_Matching::Landmark landmark;
+						landmark.name = observed.name;
+						for (const auto& observed_point : observed.points){
+							Eigen::Vector2d point;
+							point(0) = observed_point.x;
+							point(1) = observed_point.y;
+							point = rotation_matrix * point;
+							KD_Tree::Point transformed_point;
+							transformed_point.x = point(0) + data.robot_pose.x;
+							transformed_point.y = point(1) + data.robot_pose.y;
+							landmark.points.push_back(transformed_point);
+						}
+						data.landmarks.push_back(landmark);
 					}
-					data.landmarks.push_back(landmark);
+					data_list.push_back(data);
 				}
-				data_list.push_back(data);
 			}
 		}
 		ICP_Matching icp;
+		int ratio = particles.size() / data_list.size();
 		for (auto& data : data_list){
-			icp.matching(tree_list, data, bbox.bounding_boxes.size());
-		}
-		for (const auto& data : data_list){
-			for (size_t i = 0; i < 10; i++){
+			bool convergence = icp.matching(tree_list, data, bbox.bounding_boxes.size());
+			if (convergence){
+				for (size_t i = 0; i < ratio; i++){
+					Pose p;
+					p.x_ = data.robot_pose.x;
+					p.y_ = data.robot_pose.y;
+					p.t_ = robot_t;
+					Particle P(p.x_, p.y_, p.t_, 0);
+					particles.push_back(P);
+					particles.erase(particles.begin());
+				}
+			}else{
 				Pose p;
 				p.x_ = data.robot_pose.x;
 				p.y_ = data.robot_pose.y;
