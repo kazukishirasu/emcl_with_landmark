@@ -84,36 +84,34 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 		return;
 
 	for(auto &p : particles_){
-		p.w_ *= p.likelihood(map_.get(), scan);
+		p.w_ *= p.likelihood(map_.get(), scan, valid_beams) * (1.0 - ratio);
 	}
 
-	alpha_ = normalizeBelief(particles_)/valid_beams;
-	// alpha_ = nonPenetrationRate( particles_.size() / 20, map_.get(), scan); //new version
+	alpha_ = normalizeBelief(particles_);
+
+	if (!bbox.bounding_boxes.empty()){
+		for(auto &p : particles_){
+			p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img) * ratio;
+		}
+	}
 
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
 		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 		expansionReset();
-		std::vector<Particle> vision_particles = particles_;
 		for (auto &p : particles_){
-			p.w_ *= p.likelihood(map_.get(), scan);
-		}
-		normalizeBelief(particles_);
-		for (auto &p : vision_particles){
-			p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img);
-		}
-		normalizeBelief(vision_particles);
-		for (size_t i = 0; i < particles_.size(); i++){
-			particles_[i].w_ = (particles_[i].w_ * (1.0 - ratio)) + (vision_particles[i].w_ * ratio);
+			p.w_ *= p.likelihood(map_.get(), scan, valid_beams) * (1.0 - ratio);
+			if (!bbox.bounding_boxes.empty()){
+				p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img) * ratio;
+			}
 		}
 	}
-	// vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
 	else
-		resetWeight();
+		resetWeight(particles_);
 
 	processed_seq_ = scan_.seq_;
 }
@@ -229,20 +227,21 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					Pose p;
 					p.x_ = data.robot_pose.x;
 					p.y_ = data.robot_pose.y;
-					p.t_ = robot_t;
+					p.t_ = data.robot_pose.t;
 					Particle P(p.x_, p.y_, p.t_, 0);
 					particles.push_back(P);
 					particles.erase(particles.begin());
 				}
-			}else{
-				Pose p;
-				p.x_ = data.robot_pose.x;
-				p.y_ = data.robot_pose.y;
-				p.t_ = robot_t;
-				Particle P(p.x_, p.y_, p.t_, 0);
-				particles.push_back(P);
-				particles.erase(particles.begin());
 			}
+			// else{
+			// 	Pose p;
+			// 	p.x_ = data.robot_pose.x;
+			// 	p.y_ = data.robot_pose.y;
+			// 	p.t_ = data.robot_pose.t;
+			// 	Particle P(p.x_, p.y_, p.t_, 0);
+			// 	particles.push_back(P);
+			// 	particles.erase(particles.begin());
+			// }
 		}
 	};
 

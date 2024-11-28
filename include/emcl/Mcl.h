@@ -29,7 +29,7 @@ public:
 	~Mcl();
 
 	std::vector<Particle> particles_;
-	double alpha_;
+	double alpha_, vision_alpha_;
 
 	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv);
 	void motionUpdate(double x, double y, double t);
@@ -55,7 +55,7 @@ protected:
 	double normalizeAngle(double t);
 	void resampling(void);
 	double normalizeBelief(std::vector<Particle>&);
-	void resetWeight(void);
+	void resetWeight(std::vector<Particle>&);
 
 	std::shared_ptr<OdomModel> odom_model_;
 	std::shared_ptr<LikelihoodFieldMap> map_;

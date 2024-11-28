@@ -107,7 +107,7 @@ void Mcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv)
 		return;
 
 	for(auto &p : particles_)
-		p.w_ *= p.likelihood(map_.get(), scan);
+		p.w_ *= p.likelihood(map_.get(), scan, valid_beams);
 
 	/*
 	alpha_ = normalizeBelief()/valid_beams;
@@ -122,7 +122,7 @@ void Mcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, bool inv)
 	if(normalizeBelief(particles_) > 0.000001)
 		resampling();
 	else
-		resetWeight();
+		resetWeight(particles_);
 
 	processed_seq_ = scan_.seq_;
 }
@@ -242,10 +242,10 @@ double Mcl::normalizeBelief(std::vector<Particle>& particles)
 	return sum;
 }
 
-void Mcl::resetWeight(void)
+void Mcl::resetWeight(std::vector<Particle>& particles)
 {
-	for(auto &p : particles_)
-		p.w_ = 1.0/particles_.size();
+	for(auto &p : particles)
+		p.w_ = 1.0/particles.size();
 }
 
 void Mcl::initialize(double x, double y, double t)
@@ -254,7 +254,7 @@ void Mcl::initialize(double x, double y, double t)
 	for(auto &p : particles_)
 		p.p_ = new_pose;
 
-	resetWeight();
+	resetWeight(particles_);
 }
 
 void Mcl::simpleReset(void)

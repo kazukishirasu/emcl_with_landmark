@@ -17,7 +17,7 @@ class Particle
 public:
 	Particle(double x, double y, double t, double w);
 
-	double likelihood(LikelihoodFieldMap *map, Scan &scan);
+	double likelihood(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams);
 	double vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node &landmark_config, double phi_th, double R_th, double w_img);
 	bool wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace);
 	Pose p_;

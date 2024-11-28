@@ -15,7 +15,7 @@ Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
 	w_ = w;
 }
 
-double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan)
+double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams)
 {
 	uint16_t t = p_.get16bitRepresentation();
 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
@@ -34,6 +34,7 @@ double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan)
 
 		ans += map->likelihood(lx, ly);
 	}
+	ans /= valid_beams;
 	return ans;
 }
 
