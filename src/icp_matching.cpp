@@ -35,7 +35,7 @@ bool ICP_Matching::matching(const std::vector<Tree>& tree_list, Data& data, size
                 }
             }
         }
-        if (dist / size < 0.5)
+        if (dist / size < 1.0)
             return true;
         Eigen::RowVector2d fix_mean = pair.fix.colwise().mean();
         Eigen::RowVector2d move_mean = pair.move.colwise().mean();

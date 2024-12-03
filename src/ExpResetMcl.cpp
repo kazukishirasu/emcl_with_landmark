@@ -22,6 +22,7 @@ ExpResetMcl::ExpResetMcl(const Pose &p, int num, const Scan &scan,
 	  expansion_radius_orientation_(expansion_radius_orientation), Mcl::Mcl(p, num, scan, odom_model, map)
 {
 	build_kd_tree(landmark_config);
+	calc_inv_det(landmark_config);
 }
 
 ExpResetMcl::~ExpResetMcl()
@@ -47,6 +48,35 @@ void ExpResetMcl::build_kd_tree(const YAML::Node& landmark_config)
 		tree_list_.push_back(tree);
 	}
 	return;
+}
+
+void ExpResetMcl::calc_inv_det(const YAML::Node& landmark_config)
+{
+	YAML::Node landmark = landmark_config["landmark"];
+	for (YAML::const_iterator it=landmark.begin(); it!=landmark.end(); ++it)
+	{
+		Particle::Inv_Det data;
+		std::string Class = it->first.as<std::string>();
+		data.Class = Class;
+		YAML::Node config = landmark[Class];
+		for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it)
+		{
+			Eigen::Vector2d mean;
+			mean(0) = it->second["pose"][0].as<double>();
+			mean(1) = it->second["pose"][1].as<double>();
+			Eigen::Matrix2d cov;
+			cov(0, 0) = it->second["cov"][0][0].as<double>();
+			cov(0, 1) = it->second["cov"][0][1].as<double>();
+			cov(1, 0) = it->second["cov"][1][0].as<double>();
+			cov(1, 1) = it->second["cov"][1][1].as<double>();
+			Eigen::Matrix2d cov_inv = cov.inverse();
+			double cov_det = cov.determinant();
+			data.mean.push_back(mean);
+			data.inv.push_back(cov_inv);
+			data.det.push_back(cov_det);
+		}
+		inv_det_.push_back(data);
+	}
 }
 
 void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, double t, bool inv, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double ratio, const double phi_th, const double R_th, const int B)
@@ -84,16 +114,12 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 		return;
 
 	for(auto &p : particles_){
-		p.w_ *= p.likelihood(map_.get(), scan, valid_beams) * (1.0 - ratio);
+		// p.w_ *= p.likelihood(map_.get(), scan, valid_beams);
+		// p.w_ *= p.vision_weight(map_.get(), scan, valid_beams, bbox, landmark_config, phi_th, R_th, w_img, ratio);
+		p.w_ *= p.vision_weight(map_.get(), scan, valid_beams, bbox, inv_det_, w_img, ratio);
 	}
 
 	alpha_ = normalizeBelief(particles_);
-
-	if (!bbox.bounding_boxes.empty()){
-		for(auto &p : particles_){
-			p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img) * ratio;
-		}
-	}
 
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
@@ -101,10 +127,9 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 		vision_sensorReset(scan, bbox, landmark_config, w_img, R_th, B, t, lidar_t);
 		expansionReset();
 		for (auto &p : particles_){
-			p.w_ *= p.likelihood(map_.get(), scan, valid_beams) * (1.0 - ratio);
-			if (!bbox.bounding_boxes.empty()){
-				p.w_ *= p.vision_weight(bbox, landmark_config, phi_th, R_th, w_img) * ratio;
-			}
+			// p.w_ *= p.likelihood(map_.get(), scan, valid_beams);
+			// p.w_ *= p.vision_weight(map_.get(), scan, valid_beams, bbox, landmark_config, phi_th, R_th, w_img, ratio);
+			p.w_ *= p.vision_weight(map_.get(), scan, valid_beams, bbox, inv_det_, w_img, ratio);
 		}
 	}
 
@@ -131,16 +156,25 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, const double robot_t, const double lidar_t)
 {
+	srand((unsigned)time(NULL));
 	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles){
-        srand((unsigned)time(NULL));
-		for(const auto& b : bbox.bounding_boxes){
-            for(YAML::const_iterator l = landmark_config["landmark"][b.Class].begin(); l!= landmark_config["landmark"][b.Class].end(); ++l){
-                for (int i = 0; i <= B; i++){
-                    Pose p_;
-                    p_.x_ = l->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-                    p_.y_ = l->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
-                    p_.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
-                    Particle P(p_.x_, p_.y_, p_.t_, 0);
+		std::vector<std::string> Class_list;
+		int number = 0;
+		for (const auto& b : bbox.bounding_boxes){
+			auto itr = std::find(Class_list.begin(), Class_list.end(), b.Class);
+			if (itr == Class_list.end()){
+				Class_list.push_back(b.Class);
+				number += landmark_config["landmark"][b.Class].size();
+			}
+		}
+		for(const auto& c : Class_list){
+            for(YAML::const_iterator l = landmark_config["landmark"][c].begin(); l!= landmark_config["landmark"][c].end(); ++l){
+                for (int i = 0; i <= (particles.size() * 0.8) / number; i++){
+                    Pose p;
+                    p.x_ = l->second["pose"][0].as<double>() + ((double) rand() / RAND_MAX * R_th);
+                    p.y_ = l->second["pose"][1].as<double>() + ((double) rand() / RAND_MAX * R_th);
+                    p.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
+                    Particle P(p.x_, p.y_, p.t_, 0);
                     particles.push_back(P);
                     particles.erase(particles.begin());
                 }
@@ -148,7 +182,6 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
     	}
 	};
 	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
-		srand((unsigned)time(NULL));
 		// ロボットと観測したランドマークとの相対座標を計算
 		std::vector<ICP_Matching::Landmark> observed_list;
 		for(const auto& b : bbox.bounding_boxes){
@@ -166,8 +199,9 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 				yaw += M_PI * 2;
 			}
 			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
-			point.x = scan.ranges_[i] * std::cos((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
-			point.y = scan.ranges_[i] * std::sin((scan.angle_increment_ * i) + std::abs(scan.angle_min_));
+			double a = (scan.angle_increment_ * i) + std::abs(scan.angle_min_) + scan.lidar_pose_yaw_;
+			point.x = scan.ranges_[i] * std::cos(a);
+			point.y = scan.ranges_[i] * std::sin(a);
 			bool find = false;
 			for (auto& observed : observed_list){
 				if (b.Class == observed.name){
@@ -191,8 +225,8 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			for (YAML::const_iterator it=config.begin(); it!=config.end(); ++it){
 				for (size_t i = 0; i < B; i++){
 					ICP_Matching::Data data;
-					data.robot_pose.x = it->second["pose"][0].as<double>() + (double) rand() / RAND_MAX * R_th;
-					data.robot_pose.y = it->second["pose"][1].as<double>() + (double) rand() / RAND_MAX * R_th;
+					data.robot_pose.x = it->second["pose"][0].as<double>() + ((double) rand() / RAND_MAX * R_th);
+					data.robot_pose.y = it->second["pose"][1].as<double>() + ((double) rand() / RAND_MAX * R_th);
 					data.robot_pose.t = 2 * M_PI * rand() / RAND_MAX - M_PI;
 					Eigen::Matrix2d rotation_matrix;
 					rotation_matrix(0, 0) = std::cos(data.robot_pose.t);
@@ -232,16 +266,15 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					particles.push_back(P);
 					particles.erase(particles.begin());
 				}
+			}else{
+				Pose p;
+				p.x_ = data.robot_pose.x;
+				p.y_ = data.robot_pose.y;
+				p.t_ = data.robot_pose.t;
+				Particle P(p.x_, p.y_, p.t_, 0);
+				particles.push_back(P);
+				particles.erase(particles.begin());
 			}
-			// else{
-			// 	Pose p;
-			// 	p.x_ = data.robot_pose.x;
-			// 	p.y_ = data.robot_pose.y;
-			// 	p.t_ = data.robot_pose.t;
-			// 	Particle P(p.x_, p.y_, p.t_, 0);
-			// 	particles.push_back(P);
-			// 	particles.erase(particles.begin());
-			// }
 		}
 	};
 

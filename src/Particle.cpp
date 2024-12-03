@@ -38,39 +38,154 @@ double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan, const int &vali
 	return ans;
 }
 
-double Particle::vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node &landmark_config, double phi_th, double R_th, double w_img)
+// double Particle::vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node &landmark_config, double phi_th, double R_th, double w_img)
+// {
+// 	double ans = 0;
+//     for(auto &b:bbox.bounding_boxes){
+//         double theta_best = M_PI;
+//         auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+//         for(YAML::const_iterator Observed = landmark_config["landmark"][b.Class].begin(); Observed != landmark_config["landmark"][b.Class].end(); ++Observed){
+//             auto Ol_x = Observed->second["pose"][0].as<double>();
+//             auto Ol_y = Observed->second["pose"][1].as<double>();
+//             if((p_.x_ - Ol_x)*(p_.x_ - Ol_x) + ((p_.y_ - Ol_y))*(p_.y_ - Ol_y) <= R_th){
+//                 double phi = atan2(Ol_y - p_.y_, Ol_x - p_.x_) - p_.t_;
+//                 double theta = std::abs(phi - yaw);
+//                 if(theta > M_PI){
+//                     theta = 2*M_PI - theta;
+//                 }
+//                 if(theta <= phi_th){
+//                     if (theta < theta_best){
+//                         theta_best = theta;
+//                     }
+//                 }
+//             }
+//         }
+//         auto weight = std::cos(theta_best);
+//         if (weight < 0){
+//             weight = 0;
+//         }
+//         ans += weight;
+//     }
+//     ans /= bbox.bounding_boxes.size();
+//     return ans;
+// }
+
+double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, double phi_th, double R_th, double w_img, double ratio)
 {
-	if (bbox.bounding_boxes.empty()){
-		return 0.0;
+	uint16_t t = p_.get16bitRepresentation();
+	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
+				- scan.lidar_pose_y_*Mcl::sin_[t];
+	double lidar_y = p_.y_ + scan.lidar_pose_x_*Mcl::sin_[t] 
+				+ scan.lidar_pose_y_*Mcl::cos_[t];
+	uint16_t lidar_yaw = Pose::get16bitRepresentation(scan.lidar_pose_yaw_);
+
+	double lidar_ans = 0.0;
+	for(int i=0;i<scan.ranges_.size();i+=scan.scan_increment_){
+		if(not scan.valid(scan.ranges_[i]))
+			continue;
+		uint16_t a = scan.directions_16bit_[i] + t + lidar_yaw;
+		double lx = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
+		double ly = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
+
+		lidar_ans += map->likelihood(lx, ly);
 	}
-	double ans = 0;
-    for(auto &b:bbox.bounding_boxes){
-        double theta_best = M_PI;
-        auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
-        for(YAML::const_iterator Observed = landmark_config["landmark"][b.Class].begin(); Observed != landmark_config["landmark"][b.Class].end(); ++Observed){
-            auto Ol_x = Observed->second["pose"][0].as<double>();
-            auto Ol_y = Observed->second["pose"][1].as<double>();
-            if((p_.x_ - Ol_x)*(p_.x_ - Ol_x) + ((p_.y_ - Ol_y))*(p_.y_ - Ol_y) <= R_th){
-                double phi = atan2(Ol_y - p_.y_, Ol_x - p_.x_) - p_.t_;
-                double theta = std::abs(phi - yaw);
-                if(theta > M_PI){
-                    theta = 2*M_PI - theta;
-                }
-                if(theta <= phi_th){
-                    if (theta < theta_best){
-                        theta_best = theta;
-                    }
-                }
-            }
-        }
-        auto weight = std::cos(theta_best);
-        if (weight < 0){
-            weight = 0;
-        }
-        ans += weight;
-    }
-    ans /= bbox.bounding_boxes.size();
-    return ans;
+	lidar_ans /= valid_beams;
+
+	if (!bbox.bounding_boxes.empty()){
+		double vision_ans = 0;
+		for(auto &b:bbox.bounding_boxes){
+			double theta_best = M_PI;
+			auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+			for(YAML::const_iterator Observed = landmark_config["landmark"][b.Class].begin(); Observed != landmark_config["landmark"][b.Class].end(); ++Observed){
+				auto Ol_x = Observed->second["pose"][0].as<double>();
+				auto Ol_y = Observed->second["pose"][1].as<double>();
+				if((p_.x_ - Ol_x)*(p_.x_ - Ol_x) + ((p_.y_ - Ol_y))*(p_.y_ - Ol_y) <= R_th){
+					double phi = atan2(Ol_y - p_.y_, Ol_x - p_.x_) - p_.t_;
+					double theta = std::abs(phi - yaw);
+					if(theta > M_PI){
+						theta = 2*M_PI - theta;
+					}
+					if(theta <= phi_th){
+						if (theta < theta_best){
+							theta_best = theta;
+						}
+					}
+				}
+			}
+			auto weight = std::cos(theta_best);
+			if (weight < 0){
+				weight = 0;
+			}
+			vision_ans += weight;
+		}
+		vision_ans /= bbox.bounding_boxes.size();
+		return (lidar_ans * (1.0 - ratio)) + (vision_ans * ratio);
+	}else{
+		return lidar_ans * (1.0 - ratio);
+	}
+}
+
+double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Inv_Det>& inv_det, double w_img, double ratio)
+{
+	uint16_t t = p_.get16bitRepresentation();
+	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
+				- scan.lidar_pose_y_*Mcl::sin_[t];
+	double lidar_y = p_.y_ + scan.lidar_pose_x_*Mcl::sin_[t] 
+				+ scan.lidar_pose_y_*Mcl::cos_[t];
+	uint16_t lidar_yaw = Pose::get16bitRepresentation(scan.lidar_pose_yaw_);
+
+	double lidar_ans = 0.0;
+	for(int i=0;i<scan.ranges_.size();i+=scan.scan_increment_){
+		if(not scan.valid(scan.ranges_[i]))
+			continue;
+		uint16_t a = scan.directions_16bit_[i] + t + lidar_yaw;
+		double lx = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
+		double ly = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
+
+		lidar_ans += map->likelihood(lx, ly);
+	}
+	lidar_ans /= valid_beams;
+
+	if (!bbox.bounding_boxes.empty()){
+		double vision_ans = 0;
+		for (const auto& b : bbox.bounding_boxes){
+			double max = 0;
+			auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img/2)) * M_PI) / (w_img/2);
+			if (yaw < 0)
+				yaw += (M_PI * 2);
+			yaw -= scan.angle_min_;
+			if (yaw > M_PI * 2)
+				yaw -= (M_PI * 2);
+			yaw -= scan.lidar_pose_yaw_;
+			if (yaw > M_PI * 2){
+				yaw -= M_PI * 2;
+			}else if (yaw < 0){
+				yaw += M_PI * 2;
+			}
+			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
+			uint16_t a = scan.directions_16bit_[i] + t + lidar_yaw;
+			Eigen::Vector2d observation_point;
+			observation_point(0) = lidar_x + scan.ranges_[i] * Mcl::cos_[a];
+			observation_point(1) = lidar_y + scan.ranges_[i] * Mcl::sin_[a];
+			for (const auto& id : inv_det){
+				if (id.Class == b.Class){
+					for (size_t i = 0; i < id.mean.size(); i++){
+						Eigen::Vector2d diff = observation_point - id.mean[i];
+						double exponent = std::exp(-0.5 * diff.transpose() * id.inv[i] * diff);
+						double likelihood = (1 / ((2 * M_PI) * std::sqrt(id.det[i]))) * exponent;
+						double max_likelihood = 1 / ((2 * M_PI) * std::sqrt(id.det[i]));
+						likelihood /= max_likelihood;
+						max = std::max(max, likelihood);
+					}
+					vision_ans += max;
+				}
+			}
+		}
+		vision_ans /= bbox.bounding_boxes.size();
+		return (lidar_ans * (1.0 - ratio)) + (vision_ans * ratio);
+	}else{
+		return lidar_ans * (1.0 - ratio);
+	}
 }
 
 bool Particle::wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace)

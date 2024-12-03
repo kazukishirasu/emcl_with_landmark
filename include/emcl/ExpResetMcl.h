@@ -27,6 +27,7 @@ public:
 					  const int w_img, const double ratio,
 					  const double phi_th, const double R_th, const int B);
 	void build_kd_tree(const YAML::Node& landmark_config);
+	void calc_inv_det(const YAML::Node& landmark_config);
 private:
 	double alpha_threshold_;
 	double open_space_threshold_;
@@ -34,6 +35,7 @@ private:
 	double expansion_radius_orientation_;
 	KD_Tree kdt;
 	std::vector<ICP_Matching::Tree> tree_list_;
+	std::vector<Particle::Inv_Det> inv_det_;
 
 	void expansionReset(void);
 	void vision_sensorReset(const Scan& scan,
