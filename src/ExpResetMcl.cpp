@@ -157,7 +157,7 @@ void ExpResetMcl::expansionReset(void)
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double R_th, const int B, const double robot_t, const double lidar_t)
 {
 	srand((unsigned)time(NULL));
-	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles){
+	auto reset1 = [&bbox, &landmark_config, &R_th, &B](std::vector<Particle>& particles, LikelihoodFieldMap *map){
 		std::vector<std::string> Class_list;
 		int number = 0;
 		for (const auto& b : bbox.bounding_boxes){
@@ -174,14 +174,16 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
                     p.x_ = l->second["pose"][0].as<double>() + ((double) rand() / RAND_MAX * R_th);
                     p.y_ = l->second["pose"][1].as<double>() + ((double) rand() / RAND_MAX * R_th);
                     p.t_ = 2 * M_PI * rand() / RAND_MAX - M_PI;
-                    Particle P(p.x_, p.y_, p.t_, 0);
-                    particles.push_back(P);
-                    particles.erase(particles.begin());
+					if (map->inMapJudgment(p.x_, p.y_)){
+						Particle P(p.x_, p.y_, p.t_, 0);
+						particles.push_back(P);
+						particles.erase(particles.begin());
+					}
                 }
             }
     	}
 	};
-	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
+	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &R_th, &B, &robot_t, &lidar_t](std::vector<Particle>& particles, LikelihoodFieldMap *map, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
 		// ロボットと観測したランドマークとの相対座標を計算
 		std::vector<ICP_Matching::Landmark> observed_list;
 		for(const auto& b : bbox.bounding_boxes){
@@ -256,8 +258,18 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 		int ratio = particles.size() / data_list.size();
 		for (auto& data : data_list){
 			bool convergence = icp.matching(tree_list, data, bbox.bounding_boxes.size());
-			if (convergence){
-				for (size_t i = 0; i < ratio; i++){
+			if (map->inMapJudgment(data.robot_pose.x, data.robot_pose.y)){
+				if (convergence){
+					for (size_t i = 0; i < ratio; i++){
+						Pose p;
+						p.x_ = data.robot_pose.x;
+						p.y_ = data.robot_pose.y;
+						p.t_ = data.robot_pose.t;
+						Particle P(p.x_, p.y_, p.t_, 0);
+						particles.push_back(P);
+						particles.erase(particles.begin());
+					}
+				}else{
 					Pose p;
 					p.x_ = data.robot_pose.x;
 					p.y_ = data.robot_pose.y;
@@ -266,14 +278,6 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 					particles.push_back(P);
 					particles.erase(particles.begin());
 				}
-			}else{
-				Pose p;
-				p.x_ = data.robot_pose.x;
-				p.y_ = data.robot_pose.y;
-				p.t_ = data.robot_pose.t;
-				Particle P(p.x_, p.y_, p.t_, 0);
-				particles.push_back(P);
-				particles.erase(particles.begin());
 			}
 		}
 	};
@@ -281,9 +285,9 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 	if (bbox.bounding_boxes.empty()){
 		return;
 	}else if (bbox.bounding_boxes.size() == 1){
-		reset1(particles_);
+		reset1(particles_, map_.get());
 	}else{
-		reset2(particles_, kdt, tree_list_);
+		reset2(particles_, map_.get(), kdt, tree_list_);
 	}
 }
 

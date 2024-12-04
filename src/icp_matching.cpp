@@ -56,6 +56,8 @@ bool ICP_Matching::matching(const std::vector<Tree>& tree_list, Data& data, size
         update_pose = R * current_pose + t;
         data.robot_pose.x = update_pose(0);
         data.robot_pose.y = update_pose(1);
+        if (R.determinant() < 0)
+            R.col(1) *= -1;
         data.robot_pose.t += std::acos(R(0, 0));
         if (data.robot_pose.t > M_PI * 2)
             data.robot_pose.t -= (M_PI * 2);

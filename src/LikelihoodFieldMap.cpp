@@ -56,6 +56,14 @@ double LikelihoodFieldMap::likelihood(double x, double y)
 	return likelihoods_[ix][iy];
 }
 
+bool LikelihoodFieldMap::inMapJudgment(double x, double y)
+{
+	int ix = (int)floor((x - origin_x_)/resolution_);
+    int iy = (int)floor((y - origin_y_)/resolution_);
+
+    return (ix >= 0 && iy >= 0 && ix < width_ && iy < height_);
+}
+
 void LikelihoodFieldMap::setLikelihood(int x, int y, double range)
 {
 	int cell_num = (int)ceil(range/resolution_);
