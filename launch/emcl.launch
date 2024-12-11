@@ -1,14 +1,17 @@
 <launch>
   <!-- Arguments -->
-  <arg name="scan_topic"          default="scan"/>
-  <arg name="initial_pose_x"      default="-2.0"/>
-  <arg name="initial_pose_y"      default="-0.5"/>
-  <arg name="initial_pose_a"      default="0.0"/>
-  <arg name="landmark_file_path"  default="$(find emcl)/landmark_list.yaml"/>
-  <arg name="weight_ratio"        default="0.25"/> <!-- 0.0~1.0 -->
-  <arg name="phi_th"              default="0.26"/>
-  <arg name="R_th"                default="20.0"/>
-  <arg name="B"                   default="1"/>
+  <arg name="scan_topic"                default="scan"/>
+  <arg name="initial_pose_x"            default="-2.0"/>
+  <arg name="initial_pose_y"            default="-0.5"/>
+  <arg name="initial_pose_a"            default="0.0"/>
+
+  <arg name="use_vision"                default="true"/>
+  <arg name="landmark_file_path"        default="$(find emcl)/landmark_list.yaml"/>
+  <arg name="vision_ratio"              default="0.2"/>
+  <arg name="sensor_reset_vision_ratio" default="0.4"/>
+  <arg name="phi_threshold"             default="0.26"/>
+  <arg name="radius_threshold"          default="20.0"/>
+  <arg name="reset_particle_ratio"      default="0.9"/>
 
   <!-- EMCL -->
   <node pkg="emcl_with_landmark" type="emcl_node" name="emcl_node" output="screen">
@@ -34,18 +37,20 @@
     <param name="alpha_threshold"               value="0.4"/>
     <param name="open_space_threshold"          value="0.05"/>
 
-    <param name="expansion_radius_position"     value="0.2"/>
+    <param name="expansion_radius_position"     value="0.1"/>
     <param name="expansion_radius_orientation"  value="0.2"/>
 
     <remap from="scan"                          to="$(arg scan_topic)"/>
     <param name="laser_min_range"               value="0.0"/>
     <param name="laser_max_range"               value="100000000.0"/>
     
+    <param name="use_vision"                    value="$(arg use_vision)"/>
     <param name="landmark_file_path"            value="$(arg landmark_file_path)"/>
-    <param name="weight_ratio"                  value="$(arg weight_ratio)"/>
-    <param name="phi_th"                        value="$(arg phi_th)"/>
-    <param name="R_th"                          value="$(arg R_th)"/>
-    <param name="B"                             value="$(arg B)"/>
+    <param name="vision_ratio"                  value="$(arg vision_ratio)"/>
+    <param name="sensor_reset_vision_ratio"     value="$(arg sensor_reset_vision_ratio)"/>
+    <param name="phi_threshold"                 value="$(arg phi_threshold)"/>
+    <param name="radius_threshold"              value="$(arg radius_threshold)"/>
+    <param name="reset_particle_ratio"          value="$(arg reset_particle_ratio)"/>
     
     <param name="scan_increment"                value="1"/>
 

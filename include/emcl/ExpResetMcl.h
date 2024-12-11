@@ -21,11 +21,12 @@ public:
 	~ExpResetMcl();
 
 	void sensorUpdate(double lidar_x, double lidar_y, double lidar_t,
-					  double t, bool inv,
+					  double t, bool inv, const bool use_vision,
 					  const yolov5_pytorch_ros::BoundingBoxes& bbox,
-					  const YAML::Node& landmark_config,
-					  const int w_img, const double ratio,
-					  const double phi_th, const double R_th, const int B);
+					  const YAML::Node& landmark_config, const int w_img,
+					  const double vision_ratio, const double sr_vision_ratio,
+					  const double phi_th, const double radius_th,
+					  const double particle_ratio);
 	void build_kd_tree(const YAML::Node& landmark_config);
 	void calc_inv_det(const YAML::Node& landmark_config);
 private:
@@ -41,8 +42,8 @@ private:
 	void vision_sensorReset(const Scan& scan,
 							const yolov5_pytorch_ros::BoundingBoxes& bbox,
 							const YAML::Node& landmark_config,
-							const int w_img, const double R_th, const int B,
-							const double t, const double lidar_t);
+							const int w_img, const double radius_th,
+							double particle_ratio, const double lidar_t);
 };
 
 }

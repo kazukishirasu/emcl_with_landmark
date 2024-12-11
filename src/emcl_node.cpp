@@ -77,10 +77,12 @@ void EMclNode::initPF(void)
 	landmark_config_ = YAML::LoadFile(landmark_file_path);
 	int w_img;
 	private_nh_.param("ImageWide", w_img_, 1280);
-	private_nh_.param("weight_ratio", ratio_, 0.5);
-	private_nh_.param("phi_th", phi_th_, 0.26);
-	private_nh_.param("R_th", R_th_, 20.0);
-    private_nh_.param("B", B_, 1);
+	private_nh_.param("vision_ratio", vision_ratio_, 0.5);
+	private_nh_.param("sensor_reset_vision_ratio", sr_vision_ratio_, 0.5);
+	private_nh_.param("phi_threshold", phi_th_, 0.26);
+	private_nh_.param("radius_threshold", radius_th_, 20.0);
+    private_nh_.param("reset_particle_ratio", particle_ratio_, 0.8);
+	private_nh_.param("use_vision", use_vision_, false);
 
 	pf_.reset(new ExpResetMcl(init_pose, num_particles, scan, om, map, alpha_th, open_space_th, ex_rad_pos, ex_rad_ori, landmark_config_));
 }
@@ -163,7 +165,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, t, inv, bbox_, landmark_config_, w_img_, ratio_, phi_th_, R_th_, B_);
+	pf_->sensorUpdate(lx, ly, lt, t, inv, use_vision_, bbox_, landmark_config_, w_img_, vision_ratio_, sr_vision_ratio_, phi_th_, radius_th_, particle_ratio_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;

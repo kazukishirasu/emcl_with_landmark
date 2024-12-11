@@ -8,8 +8,6 @@
 
 namespace emcl {
 
-
-
 Particle::Particle(double x, double y, double t, double w) : p_(x, y, t)
 {
 	w_ = w;
@@ -38,39 +36,7 @@ double Particle::likelihood(LikelihoodFieldMap *map, Scan &scan, const int &vali
 	return ans;
 }
 
-// double Particle::vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node &landmark_config, double phi_th, double R_th, double w_img)
-// {
-// 	double ans = 0;
-//     for(auto &b:bbox.bounding_boxes){
-//         double theta_best = M_PI;
-//         auto yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
-//         for(YAML::const_iterator Observed = landmark_config["landmark"][b.Class].begin(); Observed != landmark_config["landmark"][b.Class].end(); ++Observed){
-//             auto Ol_x = Observed->second["pose"][0].as<double>();
-//             auto Ol_y = Observed->second["pose"][1].as<double>();
-//             if((p_.x_ - Ol_x)*(p_.x_ - Ol_x) + ((p_.y_ - Ol_y))*(p_.y_ - Ol_y) <= R_th){
-//                 double phi = atan2(Ol_y - p_.y_, Ol_x - p_.x_) - p_.t_;
-//                 double theta = std::abs(phi - yaw);
-//                 if(theta > M_PI){
-//                     theta = 2*M_PI - theta;
-//                 }
-//                 if(theta <= phi_th){
-//                     if (theta < theta_best){
-//                         theta_best = theta;
-//                     }
-//                 }
-//             }
-//         }
-//         auto weight = std::cos(theta_best);
-//         if (weight < 0){
-//             weight = 0;
-//         }
-//         ans += weight;
-//     }
-//     ans /= bbox.bounding_boxes.size();
-//     return ans;
-// }
-
-double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, double phi_th, double R_th, double w_img, double ratio)
+double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, double phi_th, double R_th, double w_img, double ratio)
 {
 	uint16_t t = p_.get16bitRepresentation();
 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
@@ -91,7 +57,7 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &v
 	}
 	lidar_ans /= valid_beams;
 
-	if (!bbox.bounding_boxes.empty()){
+	if (use_vision && !bbox.bounding_boxes.empty()){
 		double vision_ans = 0;
 		for(auto &b:bbox.bounding_boxes){
 			double theta_best = M_PI;
@@ -125,7 +91,7 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &v
 	}
 }
 
-double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Inv_Det>& inv_det, double w_img, double ratio)
+double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Inv_Det>& inv_det, double w_img, double ratio)
 {
 	uint16_t t = p_.get16bitRepresentation();
 	double lidar_x = p_.x_ + scan.lidar_pose_x_*Mcl::cos_[t] 
@@ -146,7 +112,7 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &v
 	}
 	lidar_ans /= valid_beams;
 
-	if (!bbox.bounding_boxes.empty()){
+	if (use_vision && !bbox.bounding_boxes.empty()){
 		double vision_ans = 0;
 		for (const auto& b : bbox.bounding_boxes){
 			double max = 0;
