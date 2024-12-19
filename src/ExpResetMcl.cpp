@@ -156,8 +156,9 @@ void ExpResetMcl::expansionReset(void)
 
 void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, const int w_img, const double radius_th, double particle_ratio, const double lidar_t)
 {
-	srand((unsigned)time(NULL));
+	// センサリセット1のラムダ式
 	auto reset1 = [&bbox, &landmark_config, &radius_th, &particle_ratio](std::vector<Particle>& particles, LikelihoodFieldMap *map){
+		srand((unsigned)time(NULL));
 		std::vector<std::string> Class_list;
 		int number = 0;
 		for (const auto& b : bbox.bounding_boxes){
@@ -183,12 +184,12 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
             }
     	}
 	};
+
+	// センサリセット2のラムダ式
 	auto reset2 = [&scan, &bbox, &landmark_config, &w_img, &radius_th, &particle_ratio, &lidar_t](std::vector<Particle>& particles, LikelihoodFieldMap *map, KD_Tree kdt, std::vector<ICP_Matching::Tree> tree_list){
-		// ロボットと観測したランドマークとの相対座標を計算
-		std::vector<ICP_Matching::Landmark> observed_list;
-		for(const auto& b : bbox.bounding_boxes){
-			KD_Tree::Point point;
-			float yaw = -((((b.xmin + b.xmax) / 2) - (w_img / 2)) * M_PI) / (w_img / 2);
+		srand((unsigned)time(NULL));
+		// ヨー角計算のラムダ式
+		auto get_yaw = [&scan, &lidar_t](double& yaw){
 			if (yaw < 0)
 				yaw += (M_PI * 2);
 			yaw -= scan.angle_min_;
@@ -200,10 +201,26 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			}else if (yaw < 0){
 				yaw += M_PI * 2;
 			}
-			int i = (yaw * scan.ranges_.size()) / (M_PI * 2);
-			double a = (scan.angle_increment_ * i) + std::abs(scan.angle_min_) + scan.lidar_pose_yaw_;
-			point.x = scan.ranges_[i] * std::cos(a);
-			point.y = scan.ranges_[i] * std::sin(a);
+		};
+		// ロボットと観測したランドマークとの相対座標を計算
+		std::vector<ICP_Matching::Landmark> observed_list;
+		for(const auto& b : bbox.bounding_boxes){
+			KD_Tree::Point min_point, max_point;
+			double min_yaw = -((b.xmin - (w_img / 2)) * M_PI) / (w_img / 2);
+			double max_yaw = -((b.xmax - (w_img / 2)) * M_PI) / (w_img / 2);
+			get_yaw(min_yaw);
+			get_yaw(max_yaw);
+			int min_i = (min_yaw * scan.ranges_.size()) / (M_PI * 2);
+			int max_i = (max_yaw * scan.ranges_.size()) / (M_PI * 2);
+			double min_a = (scan.angle_increment_ * min_i) - std::abs(scan.angle_min_) - scan.lidar_pose_yaw_;
+			double max_a = (scan.angle_increment_ * max_i) - std::abs(scan.angle_min_) - scan.lidar_pose_yaw_;
+			min_point.x = scan.ranges_[min_i] * std::cos(min_a);
+			min_point.y = scan.ranges_[min_i] * std::sin(min_a);
+			max_point.x = scan.ranges_[max_i] * std::cos(max_a);
+			max_point.y = scan.ranges_[max_i] * std::sin(max_a);
+			KD_Tree::Point point;
+			point.x = (min_point.x + max_point.x) / 2;
+			point.y = (min_point.y + max_point.y) / 2;
 			bool find = false;
 			for (auto& observed : observed_list){
 				if (b.Class == observed.name){
