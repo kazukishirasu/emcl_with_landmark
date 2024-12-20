@@ -212,12 +212,15 @@ void ExpResetMcl::vision_sensorReset(const Scan& scan, const yolov5_pytorch_ros:
 			get_yaw(max_yaw);
 			int min_i = (min_yaw * scan.ranges_.size()) / (M_PI * 2);
 			int max_i = (max_yaw * scan.ranges_.size()) / (M_PI * 2);
-			double min_a = (scan.angle_increment_ * min_i) - std::abs(scan.angle_min_) - scan.lidar_pose_yaw_;
-			double max_a = (scan.angle_increment_ * max_i) - std::abs(scan.angle_min_) - scan.lidar_pose_yaw_;
-			min_point.x = scan.ranges_[min_i] * std::cos(min_a);
-			min_point.y = scan.ranges_[min_i] * std::sin(min_a);
-			max_point.x = scan.ranges_[max_i] * std::cos(max_a);
-			max_point.y = scan.ranges_[max_i] * std::sin(max_a);
+			double min_i_range = scan.ranges_[min_i], max_i_range = scan.ranges_[max_i];
+			if (min_i_range < scan.range_min_ || min_i_range > scan.range_max_ || max_i_range < scan.range_min_ || max_i_range > scan.range_max_)
+				return;
+			double min_a = (scan.angle_increment_ * min_i) - std::abs(scan.angle_min_) + lidar_t;
+			double max_a = (scan.angle_increment_ * max_i) - std::abs(scan.angle_min_) + lidar_t;
+			min_point.x = min_i_range * std::cos(min_a);
+			min_point.y = min_i_range * std::sin(min_a);
+			max_point.x = max_i_range * std::cos(max_a);
+			max_point.y = max_i_range * std::sin(max_a);
 			KD_Tree::Point point;
 			point.x = (min_point.x + max_point.x) / 2;
 			point.y = (min_point.y + max_point.y) / 2;

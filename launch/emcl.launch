@@ -41,7 +41,7 @@
     <param name="expansion_radius_orientation"  value="0.2"/>
 
     <remap from="scan"                          to="$(arg scan_topic)"/>
-    <param name="laser_min_range"               value="0.0"/>
+    <param name="laser_min_range"               value="0.5"/>
     <param name="laser_max_range"               value="100000000.0"/>
     
     <param name="use_vision"                    value="$(arg use_vision)"/>
