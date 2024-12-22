@@ -123,9 +123,8 @@ void ExpResetMcl::sensorUpdate(double lidar_x, double lidar_y, double lidar_t, d
 	ROS_INFO("ALPHA: %f / %f", alpha_, alpha_threshold_);
 	if(alpha_ < alpha_threshold_ and valid_pct > open_space_threshold_){
 		ROS_INFO("RESET");
-		if (use_vision){
+		if (use_vision)
 			vision_sensorReset(scan, bbox, landmark_config, w_img, radius_th, particle_ratio, lidar_t);
-		}
 		expansionReset();
 		for (auto &p : particles_)
 			// p.w_ *= p.likelihood(map_.get(), scan, valid_beams);
