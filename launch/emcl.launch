@@ -6,7 +6,7 @@
   <arg name="initial_pose_a"            default="0.0"/>
 
   <arg name="use_vision"                default="true"/>
-  <arg name="landmark_file_path"        default="$(find emcl)/landmark_list.yaml"/>
+  <arg name="landmark_file_path"        default="$(find emcl_with_landmark)/landmark_list.yaml"/>
   <arg name="vision_ratio"              default="0.2"/>
   <arg name="sensor_reset_vision_ratio" default="0.4"/>
   <arg name="prob_threshold"            default="0.8"/>

@@ -89,7 +89,7 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &v
 		vision_ans /= bbox.bounding_boxes.size();
 		return (lidar_ans * (1.0 - ratio)) + (vision_ans * ratio);
 	}else{
-		return lidar_ans * (1.0 - ratio);
+		return lidar_ans;
 	}
 }
 
@@ -154,7 +154,7 @@ double Particle::vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &v
 		vision_ans /= bbox.bounding_boxes.size();
 		return (lidar_ans * (1.0 - ratio)) + (vision_ans * ratio);
 	}else{
-		return lidar_ans * (1.0 - ratio);
+		return lidar_ans;
 	}
 }
 
