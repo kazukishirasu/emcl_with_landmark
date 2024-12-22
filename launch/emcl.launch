@@ -9,6 +9,7 @@
   <arg name="landmark_file_path"        default="$(find emcl)/landmark_list.yaml"/>
   <arg name="vision_ratio"              default="0.2"/>
   <arg name="sensor_reset_vision_ratio" default="0.4"/>
+  <arg name="prob_threshold"            default="0.8"/>
   <arg name="phi_threshold"             default="0.26"/>
   <arg name="radius_threshold"          default="20.0"/>
   <arg name="reset_particle_ratio"      default="0.9"/>

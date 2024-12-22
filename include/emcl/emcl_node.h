@@ -59,7 +59,7 @@ private:
 	yolov5_pytorch_ros::BoundingBoxes bbox_;
 	YAML::Node landmark_config_;
 	int w_img_;
-	double vision_ratio_, sr_vision_ratio_, phi_th_, radius_th_, particle_ratio_;
+	double vision_ratio_, sr_vision_ratio_, prob_th_, phi_th_, radius_th_, particle_ratio_;
 	bool use_vision_;
 
 	void publishPose(double x, double y, double t,

@@ -22,8 +22,8 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} )
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${EIGEN3_INCLUDE_DIR})
 
 add_library(Mcl src/Mcl.cpp)
 add_library(ExpResetMcl src/ExpResetMcl.cpp)

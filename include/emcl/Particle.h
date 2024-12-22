@@ -26,8 +26,8 @@ public:
 
 	double likelihood(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams);
 	// double vision_weight(const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node &landmark_config, double phi_th, double R_th, double w_img);
-	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, double phi_th, double R_th, double w_img, double ratio);
-	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, const std::vector<Inv_Det>& inv_det, double w_img, double ratio);
+	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, const YAML::Node& landmark_config, double prob_th, double phi_th, double R_th, double w_img, double ratio);
+	double vision_weight(LikelihoodFieldMap *map, Scan &scan, const int &valid_beams, const bool use_vision, const yolov5_pytorch_ros::BoundingBoxes& bbox, double prob_th, const std::vector<Inv_Det>& inv_det, double w_img, double ratio);
 	bool wallConflict(LikelihoodFieldMap *map, Scan &scan, double threshold, bool replace);
 	Pose p_;
 	double w_;

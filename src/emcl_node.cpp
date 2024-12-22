@@ -79,6 +79,7 @@ void EMclNode::initPF(void)
 	private_nh_.param("ImageWide", w_img_, 1280);
 	private_nh_.param("vision_ratio", vision_ratio_, 0.5);
 	private_nh_.param("sensor_reset_vision_ratio", sr_vision_ratio_, 0.5);
+	private_nh_.param("prob_threshold", prob_th_, 0.8);
 	private_nh_.param("phi_threshold", phi_th_, 0.26);
 	private_nh_.param("radius_threshold", radius_th_, 20.0);
     private_nh_.param("reset_particle_ratio", particle_ratio_, 0.8);
@@ -165,7 +166,7 @@ void EMclNode::loop(void)
 	struct timespec ts_start, ts_end;
 	clock_gettime(CLOCK_REALTIME, &ts_start);
 	*/
-	pf_->sensorUpdate(lx, ly, lt, t, inv, use_vision_, bbox_, landmark_config_, w_img_, vision_ratio_, sr_vision_ratio_, phi_th_, radius_th_, particle_ratio_);
+	pf_->sensorUpdate(lx, ly, lt, t, inv, use_vision_, bbox_, landmark_config_, w_img_, vision_ratio_, sr_vision_ratio_, prob_th_, phi_th_, radius_th_, particle_ratio_);
 	/*
 	clock_gettime(CLOCK_REALTIME, &ts_end);
 	struct tm tm;
